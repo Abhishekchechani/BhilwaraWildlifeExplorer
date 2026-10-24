@@ -93,10 +93,10 @@ h2{font-size:clamp(28px,5vw,44px);line-height:1.15;margin:0 0 18px}
 .wrap{grid-template-rows:auto minmax(220px,1.05fr) minmax(0,1.2fr) auto!important;gap:1.2vh}
 .brand-feature{display:none!important}
 .news-hero{position:relative}
-.news-hero .home-hero-logo{position:absolute;right:4%;top:50%;transform:translateY(-50%);z-index:2;width:clamp(112px,25vw,220px);height:auto;max-height:78%;object-fit:contain;filter:drop-shadow(0 3px 8px #0009);opacity:1}
+.news-hero .home-hero-logo{position:absolute!important;left:auto!important;right:4%!important;top:50%!important;bottom:auto!important;transform:translateY(-50%)!important;z-index:3!important;width:clamp(112px,25vw,220px)!important;height:auto!important;max-height:78%!important;object-fit:contain!important;object-position:center!important;display:block!important;margin:0!important;filter:drop-shadow(0 3px 8px #0009);opacity:1}
 .news-copy{left:5%;top:8%;width:62%;max-width:620px}
 .news-copy h1,.news-copy p{max-width:100%;overflow-wrap:normal}
-@media(max-width:420px){.news-hero .home-hero-logo{right:3%;width:27%;max-height:68%}.news-copy{width:66%}.news-copy h1{font-size:clamp(21px,5vw,30px)}}
+@media(max-width:420px){.news-hero .home-hero-logo{right:3%!important;left:auto!important;width:27%!important;max-height:68%!important}.news-copy{width:66%}.news-copy h1{font-size:clamp(21px,5vw,30px)}}
 .explore{display:none!important}
 .news-copy{width:72%;max-width:620px}
 .category-strip{grid-template-rows:repeat(4,minmax(74px,1fr));min-height:0}
