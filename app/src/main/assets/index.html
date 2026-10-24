@@ -50,7 +50,6 @@ button{font:inherit;color:inherit;border:0;cursor:pointer}
 .section-kicker{color:#d6e9a1;font-size:12px;letter-spacing:2px;margin-bottom:8px}
 h2{font-size:clamp(28px,5vw,44px);line-height:1.15;margin:0 0 18px}
 .video-grid{height:78vh;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;overflow:auto}
-.drive-gallery{width:100%;height:78vh;border:1px solid #c1d87955;border-radius:13px;background:#fff;overflow:hidden}.drive-gallery iframe{width:100%;height:100%;border:0}
 .video-card{background:#0b4937;border:1px solid #c1d87933;border-radius:13px;overflow:hidden;text-align:left;align-self:start}
 .thumb{height:clamp(110px,16vh,180px);background-size:cover;background-position:center;display:grid;place-items:center;position:relative}.thumb:after{content:"";position:absolute;inset:0;background:#00190b35}
 .play{position:relative;z-index:2;width:38px;height:38px;border-radius:50%;display:grid;place-items:center;background:var(--gold);color:#103c2b}
@@ -105,7 +104,8 @@ h2{font-size:clamp(28px,5vw,44px);line-height:1.15;margin:0 0 18px}
  <div class="player">
   <div class="player-top">भीलवाड़ा वन विभाग • वन्यजीव एक्सप्लोरर</div>
   <video id="vid" controls playsinline></video>
-  <button class="close" onclick="closeVideo()">✕ वापस</button>
+  <iframe id="driveFrame" title="Photo and video viewer" style="display:none;position:absolute;inset:0;width:100%;height:100%;border:0;z-index:1" allow="autoplay; fullscreen" allowfullscreen></iframe>
+  <button class="close" onclick="closeVideo()">← वापस</button>
   <div id="ptitle" class="ptitle"></div>
  </div>
 </section>
@@ -151,39 +151,31 @@ function openCat(id){
 }
 function renderCategory(){
  $('ctitle').textContent=current.icon+' '+(lang==='hi'?current.hi:current.en);
-
- // Show the user's Google Drive photo folder directly in the Photo Gallery.
- if(current.id==="gallery"){
-   $('videos').innerHTML=`<div class="drive-gallery" style="grid-column:1/-1">
-     <iframe title="Bhilwara Forest Department Photo Gallery"
-       src="https://drive.google.com/embeddedfolderview?id=1paZFBxaWtWpJwOR0P6EON02ERBUhAAh4#grid"
-       allow="autoplay"></iframe>
-   </div>`;
-   return;
+ if(current.id==='gallery'){
+  $('videos').innerHTML=`<button class="video-card" onclick="openPhotoGallery()"><div class="thumb" style="background-image:url('${current.img}')"><div class="play">📷</div></div><div class="vtitle">${lang==='hi'?'फोटो गैलरी खोलें':'Open Photo Gallery'}</div><div class="vmicro">${lang==='hi'?'तस्वीर चुनें; Drive में फोटो प्रीव्यू और आगे/पीछे नेविगेशन उपलब्ध होगा।':'Tap to open photos. Drive preview provides photo navigation.'}</div></button>`;
+  return;
  }
-
  $('videos').innerHTML=current.items.map((pair,i)=>`<button class="video-card" onclick="play(${i})"><div class="thumb" style="background-image:url('${thumbs[i%thumbs.length]}')"><div class="play">▶</div></div><div class="vtitle">${pair[lang==='hi'?1:0]}</div><div class="vmicro">${t('स्पर्श करके वीडियो देखें • वन्यजीव एक्सप्लोरर','Tap to watch • Wildlife Explorer')}</div></button>`).join('');
 }
+function openPhotoGallery(){
+ $('ptitle').textContent=lang==='hi'?'भीलवाड़ा वन विभाग फोटो गैलरी':'Bhilwara Forest Department Photo Gallery';
+ $('vid').style.display='none';$('vid').pause();
+ $('driveFrame').style.display='block';
+ $('driveFrame').src='https://drive.google.com/embeddedfolderview?id=1paZFBxaWtWpJwOR0P6EON02ERBUhAAh4#grid';
+ show('player');reset();
+}
 function play(i){
-  playingIndex=i;
-  const itemName=current.items[i][0];
-  $('ptitle').textContent=current.items[i][lang==='hi'?1:0];
-
-  // Use the Google Drive video for Arjun Tree.
-  if(current.id==="flora" && itemName==="Arjun Tree"){
-    $('vid').src="https://drive.google.com/uc?export=download&id=1r8rQypXZOqA6USG8S27e6yHKTm8qpk8w";
-  } else {
-    // Keep sample videos for the other items.
-    $('vid').src=(i%2?sample2:sample1);
-  }
-
-  show('player');
-  reset();
-  $('vid').play().catch(()=>{});
+ playingIndex=i;$('ptitle').textContent=current.items[i][lang==='hi'?1:0];
+ $('driveFrame').style.display='none';$('driveFrame').src='';$('vid').style.display='block';
+ if(current.id==='flora' && current.items[i][0]==='Arjun Tree'){
+  $('vid').style.display='none';$('driveFrame').style.display='block';
+  $('driveFrame').src='https://drive.google.com/file/d/1r8rQypXZOqA6USG8S27e6yHKTm8qpk8w/preview';
+ }else{$('vid').src=(i%2?sample2:sample1);$('vid').play().catch(()=>{});}
+ show('player');reset();
 }
 function closeVideo(){stop();show('category');reset()}
 function goमुख्यपृष्ठ(){stop();show('home');reset()}
-function stop(){$('vid').pause();$('vid').removeAttribute('src');$('vid').load()}
+function stop(){$('vid').pause();$('vid').removeAttribute('src');$('vid').load();$('vid').style.display='block';$('driveFrame').src='';$('driveFrame').style.display='none'}
 function show(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));$(id).classList.add('active')}
 function reset(){clearTimeout(timer);timer=setTimeout(goमुख्यपृष्ठ,60000)}
 ["touchstart","click","mousemove","keydown"].forEach(e=>document.addEventListener(e,reset,{passive:true}));
