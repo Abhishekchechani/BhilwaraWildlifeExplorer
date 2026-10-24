@@ -49,9 +49,9 @@ button{font:inherit;color:inherit;border:0;cursor:pointer}
 .category-wrap{position:relative;padding:9vh 4vw 3vh;height:100%;z-index:2}
 .section-kicker{color:#d6e9a1;font-size:12px;letter-spacing:2px;margin-bottom:8px}
 h2{font-size:clamp(28px,5vw,44px);line-height:1.15;margin:0 0 18px}
-.video-grid{height:78vh;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;overflow:auto}
+.video-grid{height:78vh;display:grid;grid-template-columns:repeat(auto-fill,minmax(145px,1fr));gap:12px;overflow:auto}
 .video-card{background:#0b4937;border:1px solid #c1d87933;border-radius:13px;overflow:hidden;text-align:left;align-self:start}
-.thumb{height:clamp(110px,16vh,180px);background-size:cover;background-position:center;display:grid;place-items:center;position:relative}.thumb:after{content:"";position:absolute;inset:0;background:#00190b35}
+.thumb{height:clamp(150px,24vh,240px);background-size:cover;background-position:center;display:grid;place-items:center;position:relative}.thumb:after{content:"";position:absolute;inset:0;background:#00190b35}
 .play{position:relative;z-index:2;width:38px;height:38px;border-radius:50%;display:grid;place-items:center;background:var(--gold);color:#103c2b}
 .vtitle{font-size:clamp(14px,2vw,19px);font-weight:800;padding:10px 11px 4px;line-height:1.25}
 .vmicro{padding:0 11px 12px;color:#c1d6c4;font-size:11px}
@@ -111,20 +111,11 @@ h2{font-size:clamp(28px,5vw,44px);line-height:1.15;margin:0 0 18px}
 </section>
 
 <script>
-const sample1="https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4";
-const sample2="https://www.w3schools.com/html/mov_bbb.mp4";
+const wildlifeMedia=[{"name": "Arjun Tree", "video": "1r8rQypXZOqA6USG8S27e6yHKTm8qpk8w", "image": "1QfGd0fmCXlFa0N22hH7ZpqXD6XlZuyHg"}, {"name": "Bar-headed Goose", "video": "1_4xaw0FM-WtmSmdxN8aTCgNMOOwBqnF2", "image": "1ubaOjt6VkF0iLLL-Uq09j2cDdDfXj6kS"}, {"name": "Black-rumped Flameback", "video": "1xdzkme2Q2xsGW7BPdHNwkyjI9jnfeKCD", "image": "1495n7v7j-I5aAiHO6Wvwwssvv-27kQkk"}, {"name": "Blackbuck", "video": "1fFhwbbIqko5--fT-yD_-jqPYaE8u7C0o", "image": "1tbImMYv-bngqQhLqkOkfTCQa_NZmV9Zt"}, {"name": "Brown Fish Owl", "video": "1T5LnejXfdX3muNPpdJXBkZPS3OdXvLs1", "image": "1-9dVyHpJ7LNVJYsDoNyfyjJ-V1bxq540"}, {"name": "Chinkara", "video": "1INe-J6_9YyjGCmwAWWCbYr930ZlR-j1z", "image": "1z8Ib5Qm7kEpQK9lu4mmoxRk5SeDT1XzC"}, {"name": "Crested Serpent Eagle", "video": "1RD050A9ZBuGOx1Z2JXMM51qPXzgAzAlf", "image": "1_dpqDY9aRRAJhypbz0x7XVvmGAdHLinx"}, {"name": "Egyptian Vulture", "video": "1nmuXd6RwCIkDXN34oDjuGH2gOqtRPgxk", "image": "177SFvv7IChsQP7UKLgxVMLTVGyuSsu1x"}, {"name": "Golden Jackal", "video": "1Yyz25d_K7cQZEy4JB9nubLX-i0SVnaKu", "image": "19koYr_CUcPeXKRntr2S65RNZoeC5KTWS"}, {"name": "Green Bee-eater", "video": "1PEe0NDahClZMyGzn0Wd0kOjk0DBuA_UP", "image": "15qZ5_9MLZJk53-j7BKCRTa2P3knwWGtC"}, {"name": "Himalayan Griffon", "video": "15WnYx-7occGwuBd0Ln5JfipHHLPu30e9", "image": "1_gkCqsw8wqa9LbcFAmPMSDIWwFB_gjP4"}, {"name": "Indian Eagle-owl", "video": "1YrZRo4mnLtwe3Dp07YKW46tc2kVKXjXz", "image": "1QB1omDcjWMTchnXe27jDvwK6Uu6xmynK"}, {"name": "Indian Grey Hornbill", "video": "1pKjs5NQ9iZWMXON2gCHNQ2M8yyd4EiE8", "image": "1xs2S7XwE8NKoYSv3goRyF99FAJf_dvHg"}, {"name": "Indian Paradise Flycatcher", "video": "1P6gt9RcHWhSACHbmpNfQstXVHby4Wjmd", "image": "1el18QHsww-MhIPdRGEJ7GzsJdg6RfyFG"}, {"name": "Indian Peafowl", "video": "1WgIp7LLdLJKCK667pXJj2rjAS9TN_Ld-", "image": "1ln522Vj9D2fgZB1Z_bXGZ_uZ9sOJuYPP"}, {"name": "Indian Pitta", "video": "1TO_PAF4pS61C0_nDnib8BfZrG1vpLhH7", "image": "1Qs0MCeeWwfMEjs3H2ETNOlnuIzlaTvoe"}, {"name": "Indian Roller", "video": "1fUP4GQnluB5xOpaLIPUYZfCL3ULlG03J", "image": "1WPZ46JwYPQB6dRQBH5LRd6gASH66b78N"}, {"name": "Indian Vulture", "video": "1BfE7OO0fdVWenpx4qPmRt_vRlEr3cMVw", "image": "1YUP4SZzEwTnuPebuCTBhgepQyU8sEcG7"}, {"name": "Indian Wolf", "video": "1yOYm_XbXRmkNL_az-HX5JHdYh_ulJIW8", "image": "1XZJ94tb6m6DPT3Wsod-MIKL98nsxMHoA"}, {"name": "Leopard", "video": "1E6pulAMYbnUDktkYN6YKHpdFchHLY9U9", "image": "1oXOC1p2fFQn7weR3Is1GjH-GWAf2mSbf"}, {"name": "Lesser Florican", "video": "11IEAK2mBqO_yMh1_FSUVwGijLtUpZ4dV", "image": "11x8Nkw1Jc64ClOq3f15RLIjEJb5pzQjB"}, {"name": "Osprey", "video": "13qTThd2JoeewVLpd0hRlUzejryV8hUX8", "image": "1S2T4l5tNy1Ch5KsIzzEh-GaU6_Atiauo"}, {"name": "Painted Spurfowl", "video": "1G16lrtnLr0x4A3YxCyTskrJ6TsxEw87D", "image": "1mgi6DKANWm242BrBLbwQQgSzvMJG_ABN"}, {"name": "PanchGaurav", "video": "1X796vdYTlLDfWGH-Le-uttyschNwip8a", "image": "1X796vdYTlLDfWGH-Le-uttyschNwip8a"}, {"name": "Pheasant-tailed Jacana", "video": "1IbUjuAM_rlaIC9sG6pzU4Cf_h6MAwRJO", "image": "1mvZ5px7rWdA4Ut_aAGyUIZq_QoXUrgDW"}, {"name": "Short-toed Snake Eagle", "video": "1nclrGZDjm1XA4QB7AF9QRPL5m0CKGzH1", "image": "1gEhykwMOUtTwmZnU7eK5ms3V04MSXba8"}, {"name": "Sloth Bear", "video": "1hA2GuZSSBZcYLheoI1t3Mct1lWQFnK4i", "image": "1AhjHUX6GtuhFPfYf0ZmaRxfUH8EdjeaM"}, {"name": "Spotted Owlet", "video": "1FjV92t7CRBkX27yBwGH86WqW4NOD3eoT", "image": "1vT0hm3aWc6JMJYXgND3x4-97mwksoA3j"}, {"name": "Striped Hyena", "video": "1h6mHVN8OtZx0QzjgH_uf6RT9AB58cwqS", "image": "1m9SiH4tsCMm26sDrankUucKfTgyTzzjj"}, {"name": "White-rumped Vulture", "video": "15rZUmvFEOdl2ZyXgdCOvEm66Vfdd63uY", "image": "11RNplcGJriXCWPJ3aaPtmHeU_7d83iQg"}, {"name": "White-throated Kingfisher", "video": "12x8HY8DfFHZlmvuoeU_vcjiKf7aAMfrE", "image": "1XORxqtmw6O_8TWWHlLRFN9plIaLTeNDX"}];
 const categories=[
- {id:"mammals",icon:"🐾",hi:"वन्यजीव",en:"Mammals",img:"https://images.unsplash.com/photo-1557050543-4d5f4e07ef46?auto=format&fit=crop&w=1000&q=85",items:[["Blackbuck","ब्लैकबक"],["Chinkara","चिंकारा"],["Golden Jackal","गोल्डन जैकल"],["Indian Wolf","भारतीय भेड़िया"],["Leopard","तेंदुआ"],["Sloth Bear","स्लॉथ भालू"],["Striped Hyena","धारीदार लकड़बग्घा"]]},
- {id:"birds",icon:"🦚",hi:"पक्षी",en:"Birds",img:"https://images.unsplash.com/photo-1444464666168-49d633b86797?auto=format&fit=crop&w=1000&q=85",items:[["Black-rumped Flameback","ब्लैक-रम्प्ड फ्लेमबैक"],["Green Bee-eater","ग्रीन बी-ईटर"],["Indian Paradise Flycatcher","इंडियन पैराडाइज फ्लायकैचर"],["Indian Peafowl","भारतीय मोर"],["Indian Pitta","इंडियन पिट्टा"],["Indian Roller","इंडियन रोलर"],["Painted Spurfowl","पेंटेड स्परफाउल"],["Pheasant-tailed Jacana","फीज़ेंट-टेल्ड जैकाना"],["White-throated Kingfisher","व्हाइट-थ्रोटेड किंगफिशर"]]},
- {id:"flora",icon:"🌳",hi:"वृक्ष एवं वनस्पति",en:"Trees & Flora",img:"https://images.unsplash.com/photo-1441974231531-c6227db76b6e?auto=format&fit=crop&w=1000&q=85",items:[["Arjun Tree","अर्जुन वृक्ष"]]},
- {id:"nature",icon:"🌄",hi:"वन एवं प्रकृति",en:"Forest & Nature",img:"https://images.unsplash.com/photo-1469474968028-56623f02e42e?auto=format&fit=crop&w=1000&q=85",items:[["Bhilwara Wildlife","भीलवाड़ा वन्यजीवन"],["Aravalli Landscape","अरावली का प्राकृतिक दृश्य"],["Nature of Bhilwara","भीलवाड़ा की प्रकृति"]]},
- {id:"nurseries",icon:"🌱",hi:"भीलवाड़ा की पौधशालाएँ",en:"Plant Nurseries of Bhilwara",img:"https://images.unsplash.com/photo-1416879595882-3373a0480b5b?auto=format&fit=crop&w=1000&q=85",items:[["Namo Nursery, Hamirgarh","नमो नर्सरी, हमीरगढ़"],["Namo Van","नमो वन"],["Lav-Kush Vatika","लव-कुश वाटिका"],["Shyama Prasad Mukherjee Hariyali Van","श्यामा प्रसाद मुखर्जी हरियाली वन"],["Shyama Prasad Mukherjee Van, Chittorgarh","श्यामा प्रसाद मुखर्जी वन, चित्तौड़गढ़"],["Nurseries of Bhilwara","भीलवाड़ा की पौधशालाएँ"],["Plant Growing Process","पौध तैयार करने की प्रक्रिया"],["Native Plant Species","स्थानीय पौधों की प्रजातियाँ"],["Sapling Distribution","पौध वितरण"],["Plantation Guide","वृक्षारोपण के लिए पौधे"]]},
- {id:"ecotourism",icon:"🏞️",hi:"ईको-टूरिज्म स्थल",en:"Eco-Tourism Spots",img:"https://images.unsplash.com/photo-1473448912268-2022ce9509d8?auto=format&fit=crop&w=1000&q=85",items:[["Hamirgarh Conservation Reserve","हमीरगढ़ संरक्षण रिज़र्व"],["Eco Park","ईको पार्क"],["Menal Waterfall, Mandalgarh","मेनाल जलप्रपात, मांडलगढ़"],["Eco-Tourism Spots","ईको-टूरिज्म स्थल"],["Nature Trails","प्रकृति भ्रमण मार्ग"],["Visitor Guidelines","पर्यटकों के लिए दिशा-निर्देश"]]},
- {id:"asop",icon:"🌳",hi:"आसोप संरक्षण रिज़र्व",en:"Asop Conservation Reserve",img:"https://images.unsplash.com/photo-1441974231531-c6227db76b6e?auto=format&fit=crop&w=1000&q=85",items:[["Asop Conservation Reserve","आसोप संरक्षण रिज़र्व"],["Wildlife & Habitat","वन्यजीव एवं प्राकृतिक आवास"],["Conservation Activities","संरक्षण गतिविधियाँ"]]},
- {id:"hariyalo",icon:"🌿",hi:"हरियालो राजस्थान",en:"Hariyalo Rajasthan",img:"https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=1000&q=85",items:[["Hariyalo Rajasthan","हरियालो राजस्थान"],["Tree Plantation","वृक्षारोपण"],["Green Rajasthan Initiative","हरित राजस्थान अभियान"]]},
- {id:"gallery",icon:"📸",hi:"भीलवाड़ा वन विभाग फोटो गैलरी",en:"Photo Gallery of BFD",img:"https://images.unsplash.com/photo-1469474968028-56623f02e42e?auto=format&fit=crop&w=1000&q=85",items:[["Forest & Wildlife Photos","वन एवं वन्यजीव तस्वीरें"],["Plantation Activities","वृक्षारोपण गतिविधियाँ"],["Department Events","विभागीय कार्यक्रम"]]}
+ {id:"wildlife",icon:"🎬",hi:"वीडियो लाइब्रेरी",en:"Video Library",img:"",items:wildlifeMedia.map(x=>[x.name,x.name])},
+ {id:"gallery",icon:"📸",hi:"भीलवाड़ा वन विभाग फोटो गैलरी",en:"Photo Gallery of BFD",img:"",items:wildlifeMedia.map(x=>[x.name,x.name])}
 ];
-const thumbs=["https://images.unsplash.com/photo-1557050543-4d5f4e07ef46?auto=format&fit=crop&w=900&q=80","https://images.unsplash.com/photo-1497206365907-f5e630693df0?auto=format&fit=crop&w=900&q=80","https://images.unsplash.com/photo-1516426122078-c23e76319801?auto=format&fit=crop&w=900&q=80","https://images.unsplash.com/photo-1452570053594-1b985d6ea890?auto=format&fit=crop&w=900&q=80"];
 let current=null,timer,lang='hi',playingIndex=0;
 const $=x=>document.getElementById(x);
 function t(hi,en){return lang==='hi'?hi:en}
@@ -151,28 +142,23 @@ function openCat(id){
 }
 function renderCategory(){
  $('ctitle').textContent=current.icon+' '+(lang==='hi'?current.hi:current.en);
- if(current.id==='gallery'){
-  $('videos').innerHTML=`<button class="video-card" onclick="openPhotoGallery()"><div class="thumb" style="background-image:url('${current.img}')"><div class="play">📷</div></div><div class="vtitle">${lang==='hi'?'फोटो गैलरी खोलें':'Open Photo Gallery'}</div><div class="vmicro">${lang==='hi'?'तस्वीर चुनें; Drive में फोटो प्रीव्यू और आगे/पीछे नेविगेशन उपलब्ध होगा।':'Tap to open photos. Drive preview provides photo navigation.'}</div></button>`;
+ if(current.id==='gallery' || current.id==='wildlife'){
+  $('videos').innerHTML=wildlifeMedia.map((item,i)=>`<button class="video-card" onclick="openMedia(${i},'${current.id}')"><div class="thumb" style="background-image:url('https://drive.google.com/thumbnail?id=${item.image}&sz=w800')"><div class="play">${current.id==='gallery'?'📷':'▶'}</div></div><div class="vtitle">${item.name}</div><div class="vmicro">${current.id==='gallery'?'फोटो देखें':'वीडियो देखें'}</div></button>`).join('');
   return;
  }
  $('videos').innerHTML=current.items.map((pair,i)=>`<button class="video-card" onclick="play(${i})"><div class="thumb" style="background-image:url('${thumbs[i%thumbs.length]}')"><div class="play">▶</div></div><div class="vtitle">${pair[lang==='hi'?1:0]}</div><div class="vmicro">${t('स्पर्श करके वीडियो देखें • वन्यजीव एक्सप्लोरर','Tap to watch • Wildlife Explorer')}</div></button>`).join('');
 }
-function openPhotoGallery(){
- $('ptitle').textContent=lang==='hi'?'भीलवाड़ा वन विभाग फोटो गैलरी':'Bhilwara Forest Department Photo Gallery';
- $('vid').style.display='none';$('vid').pause();
+function openPhotoGallery(){openMedia(0,'gallery')}
+function openMedia(i,mode){
+ playingIndex=i;
+ const item=wildlifeMedia[i];
+ $('ptitle').textContent=item.name;
+ $('vid').pause();$('vid').style.display='none';
  $('driveFrame').style.display='block';
- $('driveFrame').src='https://drive.google.com/embeddedfolderview?id=1paZFBxaWtWpJwOR0P6EON02ERBUhAAh4#grid';
+ $('driveFrame').src='https://drive.google.com/file/d/'+(mode==='gallery'?item.image:item.video)+'/preview';
  show('player');reset();
 }
-function play(i){
- playingIndex=i;$('ptitle').textContent=current.items[i][lang==='hi'?1:0];
- $('driveFrame').style.display='none';$('driveFrame').src='';$('vid').style.display='block';
- if(current.id==='flora' && current.items[i][0]==='Arjun Tree'){
-  $('vid').style.display='none';$('driveFrame').style.display='block';
-  $('driveFrame').src='https://drive.google.com/file/d/1r8rQypXZOqA6USG8S27e6yHKTm8qpk8w/preview';
- }else{$('vid').src=(i%2?sample2:sample1);$('vid').play().catch(()=>{});}
- show('player');reset();
-}
+function play(i){openMedia(i,'wildlife')}
 function closeVideo(){stop();show('category');reset()}
 function goमुख्यपृष्ठ(){stop();show('home');reset()}
 function stop(){$('vid').pause();$('vid').removeAttribute('src');$('vid').load();$('vid').style.display='block';$('driveFrame').src='';$('driveFrame').style.display='none'}
