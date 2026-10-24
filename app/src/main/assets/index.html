@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>भीलवाड़ा वन्यजीव एक्सप्लोरर</title>
+<style>
+:root{--forest:#063c2d;--forest2:#07543b;--leaf:#b8d95d;--gold:#f1d27a;--ink:#f7f7ed;--panel:#0d513d}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#04251d;color:var(--ink);font-family:Arial,'Noto Sans Devanagari','Mangal',sans-serif}
+button{font:inherit;color:inherit;border:0;cursor:pointer}
+.screen{position:absolute;inset:0;display:none}.screen.active{display:block}
+#home{background:linear-gradient(180deg,#064a37 0%,#032a21 45%,#021d17 100%);overflow:hidden}
+.dashboard-bg{position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,34,24,.2),rgba(0,23,17,.9)),url('https://images.unsplash.com/photo-1511497584788-876760111969?auto=format&fit=crop&w=1400&q=85') center/cover;opacity:.34}
+.wrap{position:relative;z-index:2;height:100%;padding:2.1vh 3.5vw;display:grid;grid-template-rows:auto minmax(0,1.22fr) minmax(0,1.35fr) minmax(0,.7fr);gap:1.2vh}
+.topbar{display:flex;align-items:center;justify-content:space-between;gap:8px;min-height:48px}
+.brand{display:flex;gap:9px;align-items:center;font-weight:900;letter-spacing:.5px;font-size:clamp(15px,2.3vw,22px);line-height:1.1}
+.brand small{display:block;font-size:clamp(8px,1.1vw,11px);letter-spacing:1.8px;opacity:.8;margin-top:4px}
+.leaf{width:40px;height:40px;border-radius:50%;background:#e6d18a;display:grid;place-items:center;color:#08402e;font-size:22px;flex-shrink:0}
+.header-right{display:flex;align-items:center;gap:6px}
+.badge{display:none}
+.lang-btn{padding:10px 13px;border:1px solid #e6d18a88;border-radius:22px;background:#02251dcc;color:#f6e3a1;font-weight:900;font-size:11px;letter-spacing:.5px}
+.news-hero{position:relative;min-height:0;border:1px solid #e5d49a99;border-radius:15px;overflow:hidden;background:#164d37}
+.news-hero img{position:absolute;width:100%;height:100%;object-fit:cover;inset:0}
+.news-hero:after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,rgba(0,26,17,.96),rgba(0,31,19,.77) 46%,rgba(0,0,0,.08)),linear-gradient(0deg,rgba(0,0,0,.32),transparent)}
+.news-copy{position:absolute;left:5%;top:8%;width:62%;z-index:2}
+.news-label{display:inline-block;background:var(--gold);color:#143a28;padding:6px 10px;border-radius:20px;font-size:10px;font-weight:900;margin-bottom:8px}
+.news-copy h1{font-size:clamp(24px,4.3vw,42px);line-height:1.12;letter-spacing:0;margin:0 0 8px;font-weight:900}
+.news-copy h1 span{color:#cce58b}
+.news-copy p{font-size:clamp(11px,1.8vw,16px);line-height:1.35;margin:0;color:#edf2e7;max-width:95%}
+.read-more{margin-top:10px;background:var(--gold);color:#143a28;border-radius:22px;padding:9px 15px;font-size:12px;font-weight:900}
+.category-strip{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));grid-template-rows:repeat(4,minmax(0,1fr));gap:8px;min-height:0}
+.cat{position:relative;min-height:0;border:1px solid #b8d95d55;border-radius:12px;overflow:hidden;background:#07503b;box-shadow:0 5px 16px #001a12aa;text-align:left}
+.cat:before{content:"";position:absolute;inset:0;background-image:var(--cat-img);background-position:center;background-size:cover;opacity:.82;transform:scale(1.01)}
+.cat:after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,rgba(0,39,27,.62) 0%,rgba(0,43,29,.30) 52%,rgba(0,35,25,.12) 100%),linear-gradient(0deg,rgba(0,25,17,.22),transparent 70%)}
+.cattext{position:absolute;inset:0;z-index:2;display:flex;align-items:center;gap:10px;padding:9px 10px}
+.caticon{font-size:clamp(19px,3vw,28px);flex-shrink:0;width:32px;text-align:center}
+.catcopy{min-width:0}
+.catname{font-size:clamp(12px,1.8vw,17px);font-weight:900;line-height:1.18;overflow-wrap:anywhere;text-shadow:0 2px 5px rgba(0,0,0,.75)}
+.explore{font-size:8px;color:#f0f6d3;letter-spacing:.4px;margin-top:4px;font-weight:900;text-shadow:0 1px 4px rgba(0,0,0,.9)}
+.lower-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;min-height:0}
+.quick-card{position:relative;display:flex;align-items:center;gap:10px;border:1px solid #d4dfb344;border-radius:12px;padding:10px;background:linear-gradient(135deg,#0b5a41,#063a2b);text-align:left;overflow:hidden}
+.quick-card:after{content:"";position:absolute;right:-18px;bottom:-28px;width:100px;height:100px;border-radius:50%;background:#c6dd6c12}
+.quick-icon{font-size:25px;color:var(--gold);flex-shrink:0}
+.quick-card b{display:block;font-size:clamp(12px,1.8vw,17px)}.quick-card small{display:block;color:#c4d7c7;font-size:10px;margin-top:3px}
+.footer{display:none}
+.category-bg{position:absolute;inset:0;background:linear-gradient(180deg,#07503a,#021d17)}
+.nav{position:absolute;top:18px;left:4vw;z-index:3}.nav button{background:#0a5a40;border:1px solid #b8d95d66;padding:12px 17px;border-radius:24px;font-size:14px}
+.category-wrap{position:relative;padding:9vh 4vw 3vh;height:100%;z-index:2}
+.section-kicker{color:#d6e9a1;font-size:12px;letter-spacing:2px;margin-bottom:8px}
+h2{font-size:clamp(28px,5vw,44px);line-height:1.15;margin:0 0 18px}
+.video-grid{height:78vh;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;overflow:auto}
+.video-card{background:#0b4937;border:1px solid #c1d87933;border-radius:13px;overflow:hidden;text-align:left;align-self:start}
+.thumb{height:clamp(110px,16vh,180px);background-size:cover;background-position:center;display:grid;place-items:center;position:relative}.thumb:after{content:"";position:absolute;inset:0;background:#00190b35}
+.play{position:relative;z-index:2;width:38px;height:38px;border-radius:50%;display:grid;place-items:center;background:var(--gold);color:#103c2b}
+.vtitle{font-size:clamp(14px,2vw,19px);font-weight:800;padding:10px 11px 4px;line-height:1.25}
+.vmicro{padding:0 11px 12px;color:#c1d6c4;font-size:11px}
+#player .player{position:absolute;inset:0;background:#000;display:flex;align-items:center;justify-content:center}
+#vid{width:100%;height:100%;object-fit:contain}
+.player-top{position:absolute;top:0;left:0;right:0;padding:18px 4vw;background:linear-gradient(#000b,transparent);z-index:3;font-size:13px}
+.close{position:absolute;top:18px;right:18px;z-index:4;background:#073d2e;border:1px solid #d7e6a366;border-radius:22px;padding:11px 15px}
+.ptitle{position:absolute;left:4vw;bottom:22px;z-index:3;font-size:24px;font-weight:900;text-shadow:0 2px 10px #000}
+@media (orientation:landscape){.wrap{grid-template-rows:auto minmax(0,1.15fr) minmax(0,1fr) minmax(0,.55fr);padding:2vh 3vw;gap:1vh}.category-strip{grid-template-columns:repeat(4,minmax(0,1fr));grid-template-rows:repeat(2,minmax(0,1fr))}.news-copy{width:52%}.news-copy h1{font-size:clamp(28px,3.4vw,50px)}}
+@media(max-height:760px){.wrap{gap:.8vh;padding:1.5vh 3vw}.brand .leaf{width:34px;height:34px}.news-copy h1{font-size:clamp(21px,3.4vw,34px)}.news-copy p{font-size:11px}.read-more{margin-top:6px;padding:7px 12px}.cattext{padding:6px}.explore{display:none}}
+</style>
+</head>
+<body>
+
+<section id="home" class="screen active">
+ <div class="dashboard-bg"></div>
+ <div class="wrap">
+  <div class="topbar">
+   <div class="brand"><div class="leaf">🌳</div><div>भीलवाड़ा वन विभाग<small>GOVERNMENT OF RAJASTHAN</small></div></div>
+   <div class="header-right"><div class="badge" id="badgeText">इंटरैक्टिव वन्यजीव अनुभव</div><button class="lang-btn" id="langBtn" onclick="toggleLanguage()">ENGLISH</button></div>
+  </div>
+  <div class="news-hero">
+   <img src="https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=1500&q=85" alt="">
+   <div class="news-copy">
+    <div class="news-label" id="newsLabel">📣 प्रमुख पहल</div>
+    <h1 id="heroTitle">हरित भीलवाड़ा<br><span>समृद्ध भीलवाड़ा</span></h1>
+    <p id="heroDesc">वन, वन्यजीव और प्रकृति की सुंदरता को जानिए।</p>
+    <button class="read-more" id="ctaText" onclick="openCat('gallery')">▤ फोटो गैलरी देखें ›</button>
+   </div>
+  </div>
+  <div id="cats" class="category-strip"></div>
+  <div class="lower-row">
+   <button class="quick-card" onclick="openCat('gallery')"><span class="quick-icon">▧</span><span><b id="photosLabel">फोटो गैलरी</b><small id="photosSub">भीलवाड़ा वन विभाग की तस्वीरें</small></span></button>
+   <button class="quick-card" onclick="openCat('mammals')"><span class="quick-icon">▶</span><span><b id="videosLabel">वीडियो लाइब्रेरी</b><small id="videosSub">वीडियो देखें</small></span></button>
+  </div>
+ </div>
+</section>
+
+<section id="category" class="screen">
+ <div class="category-bg"></div>
+ <div class="nav"><button onclick="goमुख्यपृष्ठ()">← मुख्य पृष्ठ</button></div>
+ <div class="category-wrap">
+  <div class="section-kicker">अपना अनुभव चुनें</div>
+  <h2 id="ctitle"></h2>
+  <div id="videos" class="video-grid"></div>
+ </div>
+</section>
+
+<section id="player" class="screen">
+ <div class="player">
+  <div class="player-top">भीलवाड़ा वन विभाग • वन्यजीव एक्सप्लोरर</div>
+  <video id="vid" controls playsinline></video>
+  <button class="close" onclick="closeVideo()">✕ वापस</button>
+  <div id="ptitle" class="ptitle"></div>
+ </div>
+</section>
+
+<script>
+const sample1="https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4";
+const sample2="https://www.w3schools.com/html/mov_bbb.mp4";
+const categories=[
+ {id:"mammals",icon:"🐾",hi:"वन्यजीव",en:"Mammals",img:"https://images.unsplash.com/photo-1557050543-4d5f4e07ef46?auto=format&fit=crop&w=1000&q=85",items:[["Blackbuck","ब्लैकबक"],["Chinkara","चिंकारा"],["Golden Jackal","गोल्डन जैकल"],["Indian Wolf","भारतीय भेड़िया"],["Leopard","तेंदुआ"],["Sloth Bear","स्लॉथ भालू"],["Striped Hyena","धारीदार लकड़बग्घा"]]},
+ {id:"birds",icon:"🦚",hi:"पक्षी",en:"Birds",img:"https://images.unsplash.com/photo-1444464666168-49d633b86797?auto=format&fit=crop&w=1000&q=85",items:[["Black-rumped Flameback","ब्लैक-रम्प्ड फ्लेमबैक"],["Green Bee-eater","ग्रीन बी-ईटर"],["Indian Paradise Flycatcher","इंडियन पैराडाइज फ्लायकैचर"],["Indian Peafowl","भारतीय मोर"],["Indian Pitta","इंडियन पिट्टा"],["Indian Roller","इंडियन रोलर"],["Painted Spurfowl","पेंटेड स्परफाउल"],["Pheasant-tailed Jacana","फीज़ेंट-टेल्ड जैकाना"],["White-throated Kingfisher","व्हाइट-थ्रोटेड किंगफिशर"]]},
+ {id:"flora",icon:"🌳",hi:"वृक्ष एवं वनस्पति",en:"Trees & Flora",img:"https://images.unsplash.com/photo-1441974231531-c6227db76b6e?auto=format&fit=crop&w=1000&q=85",items:[["Arjun Tree","अर्जुन वृक्ष"]]},
+ {id:"nature",icon:"🌄",hi:"वन एवं प्रकृति",en:"Forest & Nature",img:"https://images.unsplash.com/photo-1469474968028-56623f02e42e?auto=format&fit=crop&w=1000&q=85",items:[["Bhilwara Wildlife","भीलवाड़ा वन्यजीवन"],["Aravalli Landscape","अरावली का प्राकृतिक दृश्य"],["Nature of Bhilwara","भीलवाड़ा की प्रकृति"]]},
+ {id:"nurseries",icon:"🌱",hi:"भीलवाड़ा की पौधशालाएँ",en:"Plant Nurseries of Bhilwara",img:"https://images.unsplash.com/photo-1416879595882-3373a0480b5b?auto=format&fit=crop&w=1000&q=85",items:[["Namo Nursery, Hamirgarh","नमो नर्सरी, हमीरगढ़"],["Namo Van","नमो वन"],["Lav-Kush Vatika","लव-कुश वाटिका"],["Shyama Prasad Mukherjee Hariyali Van","श्यामा प्रसाद मुखर्जी हरियाली वन"],["Shyama Prasad Mukherjee Van, Chittorgarh","श्यामा प्रसाद मुखर्जी वन, चित्तौड़गढ़"],["Nurseries of Bhilwara","भीलवाड़ा की पौधशालाएँ"],["Plant Growing Process","पौध तैयार करने की प्रक्रिया"],["Native Plant Species","स्थानीय पौधों की प्रजातियाँ"],["Sapling Distribution","पौध वितरण"],["Plantation Guide","वृक्षारोपण के लिए पौधे"]]},
+ {id:"ecotourism",icon:"🏞️",hi:"ईको-टूरिज्म स्थल",en:"Eco-Tourism Spots",img:"https://images.unsplash.com/photo-1473448912268-2022ce9509d8?auto=format&fit=crop&w=1000&q=85",items:[["Hamirgarh Conservation Reserve","हमीरगढ़ संरक्षण रिज़र्व"],["Eco Park","ईको पार्क"],["Menal Waterfall, Mandalgarh","मेनाल जलप्रपात, मांडलगढ़"],["Eco-Tourism Spots","ईको-टूरिज्म स्थल"],["Nature Trails","प्रकृति भ्रमण मार्ग"],["Visitor Guidelines","पर्यटकों के लिए दिशा-निर्देश"]]},
+ {id:"asop",icon:"🌳",hi:"आसोप संरक्षण रिज़र्व",en:"Asop Conservation Reserve",img:"https://images.unsplash.com/photo-1441974231531-c6227db76b6e?auto=format&fit=crop&w=1000&q=85",items:[["Asop Conservation Reserve","आसोप संरक्षण रिज़र्व"],["Wildlife & Habitat","वन्यजीव एवं प्राकृतिक आवास"],["Conservation Activities","संरक्षण गतिविधियाँ"]]},
+ {id:"hariyalo",icon:"🌿",hi:"हरियालो राजस्थान",en:"Hariyalo Rajasthan",img:"https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=1000&q=85",items:[["Hariyalo Rajasthan","हरियालो राजस्थान"],["Tree Plantation","वृक्षारोपण"],["Green Rajasthan Initiative","हरित राजस्थान अभियान"]]},
+ {id:"gallery",icon:"📸",hi:"भीलवाड़ा वन विभाग फोटो गैलरी",en:"Photo Gallery of BFD",img:"https://images.unsplash.com/photo-1469474968028-56623f02e42e?auto=format&fit=crop&w=1000&q=85",items:[["Forest & Wildlife Photos","वन एवं वन्यजीव तस्वीरें"],["Plantation Activities","वृक्षारोपण गतिविधियाँ"],["Department Events","विभागीय कार्यक्रम"]]}
+];
+const thumbs=["https://images.unsplash.com/photo-1557050543-4d5f4e07ef46?auto=format&fit=crop&w=900&q=80","https://images.unsplash.com/photo-1497206365907-f5e630693df0?auto=format&fit=crop&w=900&q=80","https://images.unsplash.com/photo-1516426122078-c23e76319801?auto=format&fit=crop&w=900&q=80","https://images.unsplash.com/photo-1452570053594-1b985d6ea890?auto=format&fit=crop&w=900&q=80"];
+let current=null,timer,lang='hi',playingIndex=0;
+const $=x=>document.getElementById(x);
+function t(hi,en){return lang==='hi'?hi:en}
+function renderHome(){
+ document.documentElement.lang=lang;
+ document.title=t('भीलवाड़ा वन्यजीव एक्सप्लोरर','Bhilwara Wildlife Explorer');
+ $('badgeText').textContent=t('वन विभाग • राजस्थान सरकार','FOREST DEPARTMENT • RAJASTHAN');
+ $('langBtn').textContent=lang==='hi'?'ENGLISH':'हिंदी';
+ $('newsLabel').textContent=t('📣 प्रमुख पहल','📣 FEATURED UPDATE');
+ $('heroTitle').innerHTML=lang==='hi'?'हरित भीलवाड़ा<br><span>समृद्ध भीलवाड़ा</span>':'Green Bhilwara<br><span>Prosperous Bhilwara</span>';
+ $('heroDesc').textContent=t('वन, वन्यजीव और प्रकृति की सुंदरता को जानिए।','Explore forests, wildlife and the natural beauty of Bhilwara.');
+ $('ctaText').textContent=t('▤ फोटो गैलरी देखें ›','▤ Explore Photo Gallery ›');
+ $('photosLabel').textContent=t('फोटो गैलरी','Photo Gallery');
+ $('photosSub').textContent=t('भीलवाड़ा वन विभाग की तस्वीरें','Photos from the Forest Department');
+ $('videosLabel').textContent=t('वीडियो लाइब्रेरी','Video Library');
+ $('videosSub').textContent=t('वन्यजीव और प्रकृति के वीडियो','Wildlife and nature videos');
+ $('cats').innerHTML=categories.map(c=>`<button class="cat" style="--cat-img:url('${c.img}')" onclick="openCat('${c.id}')"><div class="cattext"><div class="caticon">${c.icon}</div><div class="catcopy"><div class="catname">${lang==='hi'?c.hi:c.en}</div><div class="explore">${t('जानने के लिए स्पर्श करें','TOUCH TO EXPLORE')} ›</div></div></div></button>`).join('');
+}
+function toggleLanguage(){lang=lang==='hi'?'en':'hi';renderHome();if($('category').classList.contains('active')&&current)renderCategory();if($('player').classList.contains('active')&&current)$('ptitle').textContent=current.items[playingIndex][lang==='hi'?1:0];}
+function renderमुख्यपृष्ठ(){renderHome()}
+function pulseCats(){document.querySelectorAll(".cat").forEach((x,i)=>setTimeout(()=>{x.style.transform="scale(1.03)";setTimeout(()=>x.style.transform="",180)},i*90))}
+function openCat(id){
+ current=categories.find(x=>x.id===id);renderCategory();show("category");reset();
+}
+function renderCategory(){
+ $('ctitle').textContent=current.icon+' '+(lang==='hi'?current.hi:current.en);
+ $('videos').innerHTML=current.items.map((pair,i)=>`<button class="video-card" onclick="play(${i})"><div class="thumb" style="background-image:url('${thumbs[i%thumbs.length]}')"><div class="play">▶</div></div><div class="vtitle">${pair[lang==='hi'?1:0]}</div><div class="vmicro">${t('स्पर्श करके वीडियो देखें • वन्यजीव एक्सप्लोरर','Tap to watch • Wildlife Explorer')}</div></button>`).join('');
+}
+function play(i){playingIndex=i;$('ptitle').textContent=current.items[i][lang==='hi'?1:0];$('vid').src=(i%2?sample2:sample1);show('player');reset();$('vid').play().catch(()=>{});}
+function closeVideo(){stop();show('category');reset()}
+function goमुख्यपृष्ठ(){stop();show('home');reset()}
+function stop(){$('vid').pause();$('vid').removeAttribute('src');$('vid').load()}
+function show(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));$(id).classList.add('active')}
+function reset(){clearTimeout(timer);timer=setTimeout(goमुख्यपृष्ठ,60000)}
+["touchstart","click","mousemove","keydown"].forEach(e=>document.addEventListener(e,reset,{passive:true}));
+renderHome();reset();
+</script>
+</body>
+</html>
