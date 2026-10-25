@@ -126,6 +126,28 @@ h2{font-size:clamp(28px,5vw,44px);line-height:1.15;margin:0 0 18px}
 }
 @media(orientation:landscape){.video-grid{grid-template-columns:repeat(3,minmax(0,1fr))}.category-wrap{padding-top:82px}}
 
+
+/* Home featured journey and second-page category navigation */
+.wrap{grid-template-rows:auto minmax(190px,1.05fr) minmax(120px,.85fr) auto!important}
+.home-journey{position:relative;display:flex;align-items:center;justify-content:space-between;min-height:0;overflow:hidden;border:1px solid #d8d78b88;border-radius:16px;padding:clamp(14px,3vw,28px);background:linear-gradient(110deg,#073a2a,#0d6042 65%,#174d35);box-shadow:0 6px 20px #00170f88}
+.journey-copy{position:relative;z-index:2;max-width:72%}
+.journey-kicker{font-size:clamp(9px,1.4vw,12px);font-weight:900;letter-spacing:1px;color:#f1d27a;text-transform:uppercase;margin-bottom:8px}
+.journey-copy h2{font-size:clamp(20px,3.7vw,34px);line-height:1.13;margin:0 0 8px}
+.journey-copy p{font-size:clamp(11px,1.8vw,15px);line-height:1.4;margin:0;color:#e1efdf}
+.journey-play{margin-top:12px;background:#f1d27a;color:#143a28;border-radius:24px;padding:10px 16px;font-size:12px;font-weight:900}
+.journey-art{position:absolute;right:5%;font-size:clamp(48px,10vw,100px);opacity:.9;filter:drop-shadow(0 3px 7px #0006)}
+.journey-art span{font-size:.55em;margin-left:-.4em}
+.category-entry{display:flex;align-items:center;justify-content:center;gap:10px;position:relative;border:1px solid #d5c47799;border-radius:14px;background:linear-gradient(110deg,#0a5a40,#073b2b);padding:12px 16px;text-align:center;font-weight:900;font-size:clamp(13px,2.2vw,18px);color:#f7f7ed;min-height:54px}
+.category-entry span{display:block}
+.category-entry small{display:block;font-size:clamp(10px,1.7vw,13px);font-weight:700;color:#dbe8bc;margin-left:6px}
+.category-entry b{font-size:24px;color:#f1d27a}
+@media(max-width:480px){.wrap{grid-template-rows:auto minmax(190px,1fr) minmax(115px,.7fr) auto!important}.journey-copy{max-width:78%}.journey-art{right:2%;font-size:52px}.category-entry{flex-wrap:wrap;gap:4px 8px}}
+
+.menu-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:11px;padding-bottom:24px}
+.menu-card{display:flex;align-items:center;gap:12px;text-align:left;padding:16px 14px;border-radius:13px;background:linear-gradient(135deg,#0b5a41,#063827);border:1px solid #c1d87955;min-height:72px}
+.menu-icon{font-size:27px}.menu-name{font-weight:850;font-size:clamp(13px,2vw,18px);flex:1}.menu-arrow{font-size:23px;color:#f1d27a}
+#catmenu .category-wrap{overflow-y:auto}
+@media(min-width:700px){.menu-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
 </style>
 </head>
 <body>
@@ -143,14 +165,37 @@ h2{font-size:clamp(28px,5vw,44px);line-height:1.15;margin:0 0 18px}
     <div class="news-label" id="newsLabel">📣 प्रमुख पहल</div>
     <h1 id="heroTitle">हरित भीलवाड़ा<br><span>समृद्ध भीलवाड़ा</span></h1>
     <p id="heroDesc">वन, वन्यजीव और प्रकृति की सुंदरता को जानिए।</p>
-    <button class="read-more" id="ctaText" onclick="openCat('gallery')">▤ फोटो गैलरी देखें ›</button>
+    <button class="read-more" id="ctaText" onclick="openFeaturedJourney()">▤ फोटो गैलरी देखें ›</button>
    </div>
   </div>
-  <div id="cats" class="category-strip"></div>
+  <div class="home-journey">
+   <div class="journey-copy">
+    <div class="journey-kicker" id="journeyKicker">Featured Wildlife Journey • 30 Minutes</div>
+    <h2 id="journeyTitle">Discover Bhilwara’s Wild Beauty</h2>
+    <p id="journeyDesc">A 30-minute journey through the forests and wildlife of Bhilwara.</p>
+    <button class="journey-play" onclick="openFeaturedJourney()">▶ <span id="journeyPlayText">Watch Journey / यात्रा देखें</span></button>
+   </div>
+   <div class="journey-art">🌳<span>🦌</span></div>
+  </div>
+  <button class="category-entry" onclick="openCategoryPage()">
+   <span id="categoryEntryText">Explore Bhilwara वन विभाग</span>
+   <small id="categoryEntryHindi">भीलवाड़ा वन विभाग को जानें</small>
+   <b>›</b>
+  </button>
   <div class="lower-row">
    <button class="quick-card" onclick="openCat('gallery')"><span class="quick-icon">▧</span><span><b id="photosLabel">फोटो गैलरी</b><small id="photosSub">भीलवाड़ा वन विभाग की तस्वीरें</small></span></button>
    <button class="quick-card" onclick="openVideoLibrary()"><span class="quick-icon">▶</span><span><b id="videosLabel">वीडियो लाइब्रेरी</b><small id="videosSub">वीडियो देखें</small></span></button>
   </div>
+ </div>
+</section>
+
+<section id="catmenu" class="screen">
+ <div class="category-bg"></div>
+ <div class="nav"><button onclick="goमुख्यपृष्ठ()">← Home / मुख्य पृष्ठ</button></div>
+ <div class="category-wrap">
+  <div class="section-kicker">Explore / अन्वेषण</div>
+  <h2 id="menuTitle">Explore Bhilwara वन विभाग<br>भीलवाड़ा वन विभाग को जानें</h2>
+  <div id="categoryMenuGrid" class="menu-grid"></div>
  </div>
 </section>
 
@@ -199,16 +244,33 @@ function renderHome(){
  $('newsLabel').textContent=t('📣 प्रमुख पहल','📣 FEATURED UPDATE');
  $('heroTitle').innerHTML=lang==='hi'?'हरित भीलवाड़ा<br><span>समृद्ध भीलवाड़ा</span>':'Green Bhilwara<br><span>Prosperous Bhilwara</span>';
  $('heroDesc').textContent=t('वन, वन्यजीव और प्रकृति की सुंदरता को जानिए।','Explore forests, wildlife and the natural beauty of Bhilwara.');
- $('ctaText').textContent=t('▤ फोटो गैलरी देखें ›','▤ Explore Photo Gallery ›');
+ $('ctaText').textContent=t('वन्यजीव यात्रा देखें ›','Watch Wildlife Journey ›');
  $('photosLabel').textContent=t('फोटो गैलरी','Photo Gallery');
  $('photosSub').textContent=t('भीलवाड़ा वन विभाग की तस्वीरें','Photos from the Forest Department');
  $('videosLabel').textContent=t('वीडियो लाइब्रेरी','Video Library');
  $('videosSub').textContent=t('वन्यजीव और प्रकृति के वीडियो','Wildlife and nature videos');
- $('cats').innerHTML=categories.map(c=>`<button class="cat" style="--cat-img:url('${c.img}')" onclick="openCat('${c.id}')"><div class="cattext"><div class="caticon">${c.icon}</div><div class="catcopy"><div class="catname">${lang==='hi'?c.hi:c.en}</div></div></div></button>`).join('');
+ $('journeyKicker').textContent=t('30 मिनट की वन्यजीव यात्रा','Featured Wildlife Journey • 30 Minutes');
+ $('journeyTitle').textContent=t('भीलवाड़ा की वन सुंदरता की खोज करें','Discover Bhilwara’s Wild Beauty');
+ $('journeyDesc').textContent=t('भीलवाड़ा के जंगलों और वन्यजीवों की 30 मिनट की यात्रा।','A 30-minute journey through the forests and wildlife of Bhilwara.');
+ $('journeyPlayText').textContent=t('यात्रा देखें / Watch Journey','Watch Journey / यात्रा देखें');
+ $('categoryEntryText').textContent='Explore Bhilwara वन विभाग';
+ $('categoryEntryHindi').textContent='भीलवाड़ा वन विभाग को जानें';
 }
 function toggleLanguage(){lang=lang==='hi'?'en':'hi';renderHome();if($('category').classList.contains('active')&&current)renderCategory();if($('player').classList.contains('active')&&current)$('ptitle').textContent=current.items[playingIndex][lang==='hi'?1:0];}
 function renderमुख्यपृष्ठ(){renderHome()}
 function pulseCats(){document.querySelectorAll(".cat").forEach((x,i)=>setTimeout(()=>{x.style.transform="scale(1.03)";setTimeout(()=>x.style.transform="",180)},i*90))}
+function openCategoryPage(){
+ $('categoryMenuGrid').innerHTML=categories.map(c=>`<button class="menu-card" onclick="openCat('${c.id}')"><span class="menu-icon">${c.icon}</span><span class="menu-name">${lang==='hi'?c.hi:c.en}</span><span class="menu-arrow">›</span></button>`).join('');
+ show('catmenu');reset();
+}
+function openFeaturedJourney(){
+ playingIndex=0;
+ $('ptitle').textContent=t('भीलवाड़ा की 30 मिनट की वन्यजीव यात्रा','Bhilwara • 30-Minute Wildlife Journey');
+ $('vid').pause();$('vid').style.display='none';
+ $('driveFrame').style.display='block';
+ $('driveFrame').src='https://drive.google.com/file/d/1eNhK794i9EC54FTzFv5uYxtEUZWFL7nB/preview';
+ show('player');reset();
+}
 function openCat(id){
  current=categories.find(x=>x.id===id);renderCategory();show("category");reset();
 }
