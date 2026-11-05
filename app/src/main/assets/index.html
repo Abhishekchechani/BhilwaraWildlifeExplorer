@@ -871,7 +871,20 @@ function openFeaturedJourney(){
  show('player');reset();
 }
 function openCat(id){
- current=categories.find(x=>x.id===id);renderCategory();show("category");reset();
+ // Gallery is intentionally a bottom shortcut, not a visible category tile.
+ // Keep its dedicated destination even though its duplicate category card was removed.
+ if(id==='gallery'){
+   current={id:'gallery',icon:'📸',hi:'फोटो गैलरी',en:'Photo Gallery',items:[]};
+ } else {
+   current=categories.find(x=>x.id===id);
+ }
+ if(!current){
+   console.warn('Unknown category:',id);
+   return;
+ }
+ renderCategory();
+ show('category');
+ reset();
 }
 function openVideoLibrary(){
  current={id:"videoLibrary",icon:"🎬",hi:"वीडियो लाइब्रेरी",en:"Video Library"};
