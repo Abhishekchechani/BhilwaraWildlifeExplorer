@@ -918,7 +918,9 @@ function renderCategory(){
    return `<button class="video-card" onclick="play(${i})"><div class="thumb" style="background-image:url('${img}')"><div class="play">▶</div></div><div class="vtitle">${pair[lang==='hi'?1:0]}</div><div class="vmicro">${t('स्पर्श करके वीडियो देखें • वन्यजीव एक्सप्लोरर','Tap to watch • Wildlife Explorer')}</div></button>`;
  }).join('');
 }
+let playerReturnScreen='home';
 function openMedia(i,mode){
+ playerReturnScreen='category';
  playingIndex=i;
  const item=wildlifeMedia[i];
  $('ptitle').textContent=item.name;
@@ -928,6 +930,7 @@ function openMedia(i,mode){
  show('player');reset();
 }
 function play(i){
+ playerReturnScreen='category';
  const pair=categoryRenderedItems[i] || current.items[i];
  const media=findWildlifeMedia(pair);
  if(media){
@@ -945,7 +948,7 @@ function play(i){
    show('player');reset();
  }
 }
-function closeVideo(){stop();show('home');reset()}
+function closeVideo(){stop();show(playerReturnScreen==='category'?'category':'home');reset()}
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&$('player').classList.contains('active'))closeVideo()});
 function goमुख्यपृष्ठ(){stop();show('home');reset()}
 function stop(){$('vid').pause();$('vid').removeAttribute('src');$('vid').load();$('vid').style.display='block';$('driveFrame').src='';$('driveFrame').style.display='none'}
