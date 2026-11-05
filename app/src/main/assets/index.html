@@ -262,6 +262,131 @@ h2{font-size:clamp(28px,5vw,44px);line-height:1.15;margin:0 0 18px}
  .news-hero img.hero-inline-logo{right:3.5%!important;top:51%!important;width:clamp(88px,25%,120px)!important;max-width:27%!important;padding:6px!important}
 }
 
+
+/* PANEL FULL-HEIGHT FIX */
+html, body {
+  width: 100%;
+  height: 100%;
+  min-height: 100%;
+  margin: 0;
+  overflow: hidden;
+}
+#home {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  height: 100dvh;
+  overflow: hidden;
+}
+#home .wrap {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  height: 100dvh;
+  min-height: 0;
+  box-sizing: border-box;
+  padding: max(10px, env(safe-area-inset-top)) 3.5vw
+           max(10px, env(safe-area-inset-bottom));
+  gap: clamp(8px, 1.2vh, 16px);
+  grid-template-rows:
+    minmax(54px, 7.5vh)
+    minmax(0, 1.65fr)
+    minmax(66px, .38fr)
+    minmax(72px, .48fr) !important;
+  align-content: stretch;
+}
+#home .topbar,
+#home .home-journey,
+#home .category-entry,
+#home .lower-row {
+  min-height: 0;
+  min-width: 0;
+}
+#home .home-journey {
+  height: 100% !important;
+  max-height: none !important;
+  min-height: 0 !important;
+}
+#home .lower-row {
+  height: 100%;
+}
+#home .quick-card {
+  min-height: 0;
+  height: 100%;
+}
+#home .category-entry {
+  height: 100%;
+  padding: 8px 12px;
+}
+@media (orientation: portrait) and (min-height: 900px) {
+  #home .wrap {
+    grid-template-rows:
+      minmax(58px, 7vh)
+      minmax(0, 1.8fr)
+      minmax(72px, .42fr)
+      minmax(78px, .5fr) !important;
+  }
+}
+@media (orientation: landscape) {
+  #home .wrap {
+    grid-template-rows:
+      minmax(48px, 10vh)
+      minmax(0, 1.6fr)
+      minmax(58px, .4fr)
+      minmax(60px, .45fr) !important;
+  }
+}
+
+</style>
+<style>
+/* Refined home featured poster and branding */
+.home-journey{min-height:0!important;}
+.journey-shade{background:linear-gradient(0deg,rgba(0,25,17,.68),rgba(0,25,17,.03) 48%,rgba(0,25,17,.02))!important}
+.journey-caption{inset:auto 0 0!important;align-items:center!important;padding:14px!important}
+.journey-play{display:inline-flex!important;align-items:center;justify-content:center;background:#f3d37b!important;color:#173d2c!important;border-radius:999px!important;padding:12px 22px!important;font-weight:800!important;font-size:clamp(13px,3.5vw,18px)!important;box-shadow:0 4px 15px #00170f66}
+.journey-play-overlay{top:50%!important;background:#003c2b!important;border:2px solid #f3d37b!important;color:#fff!important}
+.news-copy .hero-inline-logo{position:absolute;right:5%;top:34%;display:block;width:clamp(72px,19vw,128px);height:auto;max-height:100px;object-fit:contain;margin:0;filter:drop-shadow(0 2px 5px #0008);z-index:2}
+.news-hero .home-hero-logo{display:none!important}
+#ctaText{display:none!important}
+</style>
+<style>
+
+/* SINGLE-PAGE HOME: compact banner + journey + all categories */
+#home.screen.active{position:fixed;inset:0;display:block;height:100%;height:100dvh;overflow-x:hidden;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior-y:contain}
+#home .dashboard-bg{position:fixed;inset:0;pointer-events:none}
+#home .wrap{position:relative;display:flex!important;flex-direction:column;width:100%;height:auto!important;min-height:100%;padding:max(12px,env(safe-area-inset-top)) 3.5vw max(16px,env(safe-area-inset-bottom));gap:clamp(10px,1.4vh,18px)}
+#home .topbar{flex:0 0 auto;min-height:58px}
+#home .news-hero{flex:0 0 auto;width:100%;height:clamp(205px,25vh,330px)!important;min-height:205px!important;max-height:330px;border-radius:18px}
+#home .news-copy{left:5%!important;top:8%!important;width:60%!important;max-width:60%!important}
+#home .news-copy h1{font-size:clamp(21px,4.1vw,36px)!important;line-height:1.1}
+#home .news-copy p{font-size:clamp(11px,1.8vw,15px)!important;line-height:1.3}
+#home .news-label{margin-bottom:6px}
+#home .news-hero img.hero-inline-logo{right:4%!important;top:50%!important;width:clamp(88px,20%,145px)!important;max-width:25%!important;max-height:72%!important;padding:6px!important}
+#home .home-journey{flex:0 0 auto;width:100%;height:clamp(210px,27vh,350px)!important;min-height:210px!important;max-height:350px!important;border-radius:18px}
+#home .home-journey .journey-thumbnail{object-fit:cover;object-position:center 46%}
+#home .home-journey .journey-play-overlay{width:58px;height:58px}
+#home .home-journey .journey-watch{padding:11px 20px}
+#home .home-category-grid{display:grid!important;flex:0 0 auto;width:100%;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:9px;padding:0 0 2px}
+#home .home-category-grid .menu-card{min-width:0;min-height:clamp(78px,10vh,108px);height:auto;padding:10px 9px;gap:8px}
+#home .home-category-grid .menu-icon{min-width:38px;font-size:clamp(25px,5vw,36px)}
+#home .home-category-grid .menu-name{font-size:clamp(12px,1.9vw,17px);line-height:1.2;overflow-wrap:anywhere}
+#home .home-category-grid .menu-arrow{flex:0 0 auto;font-size:21px}
+#home .lower-row{flex:0 0 auto;width:100%;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+#home .quick-card{min-width:0;min-height:82px;padding:10px}
+#home .quick-card b{font-size:clamp(12px,1.8vw,16px)}
+#home .quick-card small{font-size:clamp(9px,1.4vw,11px);line-height:1.25}
+@media(orientation:landscape){
+ #home .news-hero{height:clamp(175px,38vh,260px)!important;min-height:175px!important}
+ #home .home-journey{height:clamp(175px,38vh,260px)!important;min-height:175px!important}
+ #home .home-category-grid{grid-template-columns:repeat(3,minmax(0,1fr))!important}
+}
+@media(max-width:430px){
+ #home .news-copy{width:62%!important;max-width:62%!important}
+ #home .news-hero img.hero-inline-logo{width:clamp(82px,25%,112px)!important;max-width:27%!important}
+ #home .home-category-grid .menu-card{min-height:82px}
+}
+
 </style>
 </head>
 <body>
@@ -291,11 +416,7 @@ h2{font-size:clamp(28px,5vw,44px);line-height:1.15;margin:0 0 18px}
     <span class="journey-play" id="journeyPlayText">▶ Watch Journey / यात्रा देखें</span>
    </span>
   </button>
-  <button class="category-entry" onclick="openCategoryPage()">
-   <span id="categoryEntryText">Explore Bhilwara वन विभाग</span>
-   <small id="categoryEntryHindi">भीलवाड़ा वन विभाग को जानें</small>
-   <b>›</b>
-  </button>
+  <div id="categoryMenuGrid" class="menu-grid home-category-grid" aria-label="Explore categories"></div>
   <div class="lower-row">
    <button class="quick-card" onclick="openCat('gallery')"><span class="quick-icon">▧</span><span><b id="photosLabel">फोटो गैलरी</b><small id="photosSub">भीलवाड़ा वन विभाग की तस्वीरें</small></span></button>
    <button class="quick-card" onclick="openVideoLibrary()"><span class="quick-icon">▶</span><span><b id="videosLabel">वीडियो लाइब्रेरी</b><small id="videosSub">वीडियो देखें</small></span></button>
@@ -309,7 +430,7 @@ h2{font-size:clamp(28px,5vw,44px);line-height:1.15;margin:0 0 18px}
  <div class="category-wrap">
   <div class="section-kicker">Explore / अन्वेषण</div>
   <h2 id="menuTitle">Explore Bhilwara वन विभाग<br>भीलवाड़ा वन विभाग को जानें</h2>
-  <div id="categoryMenuGrid" class="menu-grid"></div>
+  <div id="categoryMenuGridLegacy" class="menu-grid"></div>
  </div>
 </section>
 
@@ -367,6 +488,7 @@ function renderHome(){
 
 
  $('journeyPlayText').textContent=t('यात्रा देखें / Watch Journey','Watch Journey / यात्रा देखें');
+ $('categoryMenuGridLegacy').innerHTML=categories.map(c=>`<button class="menu-card" style="--menu-image:url('${c.img}')" onclick="openCat('${c.id}')"><span class="menu-icon">${c.icon}</span><span class="menu-name">${lang==='hi'?c.hi:c.en}</span><span class="menu-arrow">›</span></button>`).join('');
  $('categoryEntryText').textContent='Explore Bhilwara वन विभाग';
  $('categoryEntryHindi').textContent='भीलवाड़ा वन विभाग को जानें';
 }
@@ -374,7 +496,7 @@ function toggleLanguage(){lang=lang==='hi'?'en':'hi';renderHome();if($('category
 function renderमुख्यपृष्ठ(){renderHome()}
 function pulseCats(){document.querySelectorAll(".cat").forEach((x,i)=>setTimeout(()=>{x.style.transform="scale(1.03)";setTimeout(()=>x.style.transform="",180)},i*90))}
 function openCategoryPage(){
- $('categoryMenuGrid').innerHTML=categories.map(c=>`<button class="menu-card" style="--menu-image:url('${c.img}')" onclick="openCat('${c.id}')"><span class="menu-icon">${c.icon}</span><span class="menu-name">${lang==='hi'?c.hi:c.en}</span><span class="menu-arrow">›</span></button>`).join('');
+ $('categoryMenuGridLegacy').innerHTML=categories.map(c=>`<button class="menu-card" style="--menu-image:url('${c.img}')" onclick="openCat('${c.id}')"><span class="menu-icon">${c.icon}</span><span class="menu-name">${lang==='hi'?c.hi:c.en}</span><span class="menu-arrow">›</span></button>`).join('');
  show('catmenu');reset();
 }
 function openFeaturedJourney(){
@@ -447,7 +569,7 @@ function play(i){
    show('player');reset();
  }
 }
-function closeVideo(){stop();show('category');reset()}
+function closeVideo(){stop();show('home');reset()}
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&$('player').classList.contains('active'))closeVideo()});
 function goमुख्यपृष्ठ(){stop();show('home');reset()}
 function stop(){$('vid').pause();$('vid').removeAttribute('src');$('vid').load();$('vid').style.display='block';$('driveFrame').src='';$('driveFrame').style.display='none'}
@@ -458,14 +580,3 @@ renderHome();reset();
 </script>
 </body>
 </html>
-<style>
-/* Refined home featured poster and branding */
-.home-journey{min-height:0!important;}
-.journey-shade{background:linear-gradient(0deg,rgba(0,25,17,.68),rgba(0,25,17,.03) 48%,rgba(0,25,17,.02))!important}
-.journey-caption{inset:auto 0 0!important;align-items:center!important;padding:14px!important}
-.journey-play{display:inline-flex!important;align-items:center;justify-content:center;background:#f3d37b!important;color:#173d2c!important;border-radius:999px!important;padding:12px 22px!important;font-weight:800!important;font-size:clamp(13px,3.5vw,18px)!important;box-shadow:0 4px 15px #00170f66}
-.journey-play-overlay{top:50%!important;background:#003c2b!important;border:2px solid #f3d37b!important;color:#fff!important}
-.news-copy .hero-inline-logo{position:absolute;right:5%;top:34%;display:block;width:clamp(72px,19vw,128px);height:auto;max-height:100px;object-fit:contain;margin:0;filter:drop-shadow(0 2px 5px #0008);z-index:2}
-.news-hero .home-hero-logo{display:none!important}
-#ctaText{display:none!important}
-</style>
