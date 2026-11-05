@@ -491,6 +491,203 @@ html, body {
 }
 
 </style>
+<style>
+
+/* FINAL SCROLL FIX: make #home the ONLY vertical scroll container */
+html, body {
+  height: 100% !important;
+  min-height: 100% !important;
+  overflow: hidden !important;
+  overscroll-behavior: none;
+}
+#home.screen.active {
+  position: fixed !important;
+  inset: 0 !important;
+  display: block !important;
+  width: 100% !important;
+  height: 100vh !important;
+  height: 100dvh !important;
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+  -webkit-overflow-scrolling: touch !important;
+  touch-action: pan-y !important;
+  overscroll-behavior-y: contain !important;
+}
+#home .dashboard-bg {
+  position: fixed !important;
+  inset: 0 !important;
+  pointer-events: none !important;
+}
+#home .wrap {
+  position: relative !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: stretch !important;
+  width: 100% !important;
+  height: auto !important;
+  min-height: 100% !important;
+  max-height: none !important;
+  overflow: visible !important;
+  padding: max(12px, env(safe-area-inset-top)) 3.5vw
+           max(24px, env(safe-area-inset-bottom)) !important;
+  gap: clamp(10px, 1.4vh, 18px) !important;
+  box-sizing: border-box !important;
+  touch-action: pan-y !important;
+}
+#home .topbar,
+#home .news-hero,
+#home .home-journey,
+#home .home-category-grid,
+#home .lower-row {
+  flex-shrink: 0 !important;
+}
+#home .home-category-grid {
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  grid-auto-rows: minmax(82px, auto) !important;
+  height: auto !important;
+  max-height: none !important;
+  overflow: visible !important;
+  padding-bottom: 8px !important;
+}
+#home .home-category-grid .menu-card {
+  min-height: 82px !important;
+  height: auto !important;
+  pointer-events: auto !important;
+}
+#home .lower-row {
+  margin-bottom: 8px !important;
+}
+@media (orientation: landscape) and (min-width: 700px) {
+  #home .home-category-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  }
+}
+/* Keep scroll gestures available even when starting on cards or poster */
+#home .menu-card,
+#home .home-journey,
+#home .news-hero,
+#home .lower-row {
+  touch-action: pan-y !important;
+}
+
+</style>
+<style>
+
+/* BHILWARA 43-INCH PORTRAIT SIGNAGE LAYOUT — FIT ALL CONTENT WITHOUT SCROLL */
+:root { color-scheme: dark; }
+html, body {
+  width:100% !important; height:100% !important; min-height:100% !important;
+  margin:0 !important; overflow:hidden !important;
+}
+#home.screen.active {
+  position:fixed !important; inset:0 !important; display:block !important;
+  width:100vw !important; height:100vh !important; height:100dvh !important;
+  overflow:hidden !important; touch-action:manipulation !important;
+}
+#home .dashboard-bg { position:fixed !important; inset:0 !important; pointer-events:none !important; }
+#home .wrap {
+  position:relative !important; z-index:2 !important;
+  display:grid !important;
+  grid-template-columns:minmax(0,1fr) !important;
+  /* Header / initiative banner / journey video / 9 category tiles / shortcuts */
+  grid-template-rows:6.5fr 14fr 20fr 34fr 8fr !important;
+  gap:1.15vh !important;
+  width:100% !important; height:100vh !important; height:100dvh !important;
+  min-height:0 !important; max-height:100% !important;
+  box-sizing:border-box !important;
+  padding:1.25vh 2.6vw 1.4vh !important;
+  overflow:hidden !important;
+  align-content:stretch !important;
+}
+#home .topbar {
+  min-height:0 !important; height:100% !important; gap:1.2vw !important;
+  align-items:center !important;
+}
+#home .brand { gap:1vw !important; font-size:clamp(20px,1.55vw,36px) !important; }
+#home .official-logo { width:clamp(48px,4.2vw,92px) !important; height:90% !important; }
+#home .brand small { font-size:clamp(10px,.8vw,19px) !important; letter-spacing:.12em !important; }
+#home .lang-btn { font-size:clamp(12px,.95vw,22px) !important; padding:.65em 1.15em !important; }
+#home .news-hero {
+  width:100% !important; height:100% !important; min-height:0 !important; max-height:none !important;
+  flex:none !important; border-radius:clamp(12px,1.3vw,28px) !important;
+}
+#home .news-copy { left:4% !important; top:8% !important; width:64% !important; max-width:64% !important; }
+#home .news-label { font-size:clamp(11px,.9vw,20px) !important; padding:.45em .9em !important; margin-bottom:.45em !important; }
+#home .news-copy h1 { font-size:clamp(25px,2.15vw,48px) !important; line-height:1.08 !important; margin:0 0 .28em !important; }
+#home .news-copy p { font-size:clamp(14px,1.15vw,26px) !important; line-height:1.25 !important; }
+#home .news-hero img.hero-inline-logo {
+  right:3.5% !important; top:50% !important; transform:translateY(-50%) !important;
+  width:clamp(100px,14%,250px) !important; max-width:23% !important; max-height:76% !important;
+  padding:clamp(5px,.55vw,12px) !important;
+}
+#home .home-journey {
+  display:block !important; position:relative !important;
+  width:100% !important; height:100% !important; min-height:0 !important; max-height:none !important;
+  flex:none !important; border-radius:clamp(12px,1.3vw,28px) !important;
+  overflow:hidden !important;
+}
+#home .home-journey .journey-thumbnail { width:100% !important; height:100% !important; object-fit:cover !important; object-position:center 46% !important; }
+#home .home-journey .journey-play-overlay {
+  width:clamp(48px,5.5vw,112px) !important; height:clamp(48px,5.5vw,112px) !important;
+  font-size:clamp(22px,2.5vw,48px) !important;
+}
+#home .home-journey .journey-caption { padding:1.2vh 1vw !important; }
+#home .home-journey .journey-watch, #home .home-journey .journey-play {
+  padding:.55em 1.3em !important; font-size:clamp(14px,1.25vw,28px) !important;
+}
+#home .home-category-grid {
+  display:grid !important; visibility:visible !important; opacity:1 !important;
+  width:100% !important; height:100% !important; min-height:0 !important; max-height:none !important;
+  grid-template-columns:repeat(2,minmax(0,1fr)) !important;
+  grid-template-rows:repeat(5,minmax(0,1fr)) !important;
+  grid-auto-flow:row !important; gap:.85vh 1.1vw !important;
+  padding:0 !important; margin:0 !important; overflow:hidden !important;
+  flex:none !important; align-content:stretch !important;
+}
+#home .home-category-grid .menu-card {
+  display:flex !important; position:relative !important; min-width:0 !important; min-height:0 !important;
+  width:100% !important; height:100% !important; padding:.55vh .8vw !important;
+  gap:.65vw !important; align-items:center !important; justify-content:flex-start !important;
+  border-radius:clamp(9px,.9vw,20px) !important; overflow:hidden !important;
+}
+#home .home-category-grid .menu-icon {
+  display:inline-flex !important; align-items:center !important; justify-content:center !important;
+  min-width:clamp(34px,3.5vw,76px) !important; width:clamp(34px,3.5vw,76px) !important;
+  font-size:clamp(25px,2.3vw,50px) !important; flex:0 0 auto !important;
+}
+#home .home-category-grid .menu-name {
+  display:block !important; min-width:0 !important; flex:1 1 auto !important;
+  font-size:clamp(15px,1.25vw,28px) !important; line-height:1.16 !important;
+  overflow-wrap:anywhere !important; text-align:left !important;
+}
+#home .home-category-grid .menu-arrow { font-size:clamp(18px,1.8vw,38px) !important; flex:0 0 auto !important; }
+#home .lower-row {
+  display:grid !important; width:100% !important; height:100% !important; min-height:0 !important;
+  grid-template-columns:repeat(2,minmax(0,1fr)) !important; gap:1.1vw !important;
+  margin:0 !important; padding:0 !important; flex:none !important;
+}
+#home .quick-card {
+  display:flex !important; align-items:center !important; height:100% !important; min-height:0 !important;
+  padding:.55vh .9vw !important; gap:.7vw !important; border-radius:clamp(9px,.9vw,20px) !important;
+}
+#home .quick-icon { font-size:clamp(24px,2.4vw,52px) !important; }
+#home .quick-card b { font-size:clamp(14px,1.2vw,27px) !important; line-height:1.15 !important; }
+#home .quick-card small { font-size:clamp(10px,.85vw,19px) !important; line-height:1.15 !important; }
+#catmenu { display:none !important; }
+/* In a portrait installation, keep the 2-column grid. For a landscape test view, switch to 3 columns. */
+@media (orientation:landscape) {
+  #home .wrap { grid-template-rows:8fr 15fr 22fr 1fr 9fr !important; }
+  #home .home-category-grid { grid-template-columns:repeat(3,minmax(0,1fr)) !important; grid-template-rows:repeat(3,minmax(0,1fr)) !important; }
+}
+/* Short portrait viewports: reduce vertical sections rather than enabling scroll. */
+@media (orientation:portrait) and (max-height:1100px) {
+  #home .wrap { grid-template-rows:6fr 13fr 18fr 34fr 8fr !important; gap:.75vh !important; padding:1vh 2.2vw !important; }
+  #home .home-category-grid { gap:.55vh .8vw !important; }
+  #home .home-category-grid .menu-name { font-size:clamp(13px,1.25vw,19px) !important; }
+}
+
+</style>
 </head>
 <body>
 
