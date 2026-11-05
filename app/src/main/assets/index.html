@@ -688,6 +688,66 @@ html, body {
 }
 
 </style>
+<style>
+
+/* FINAL REQUESTED REFINEMENTS: remove duplicate gallery tile and prevent hero copy clipping */
+#home .wrap {
+  /* Header / hero banner / journey video / 8 category tiles / bottom shortcuts */
+  grid-template-rows: 6.5fr 16fr 19fr 30fr 8fr !important;
+  gap: .9vh !important;
+}
+#home .news-hero {
+  min-height: 0 !important;
+  overflow: hidden !important;
+}
+#home .news-copy {
+  top: 6% !important;
+  left: 4% !important;
+  width: 67% !important;
+  max-width: 67% !important;
+  right: auto !important;
+}
+#home .news-copy h1 {
+  font-size: clamp(22px, 1.95vw, 43px) !important;
+  line-height: 1.04 !important;
+  margin: 0 0 .22em !important;
+}
+#home .news-copy p {
+  display: block !important;
+  max-width: 100% !important;
+  font-size: clamp(13px, 1.05vw, 23px) !important;
+  line-height: 1.18 !important;
+  margin: 0 !important;
+  overflow: visible !important;
+}
+#home .news-hero img.hero-inline-logo {
+  right: 3.5% !important;
+  top: 50% !important;
+  width: clamp(88px, 13%, 220px) !important;
+  max-width: 21% !important;
+  max-height: 72% !important;
+}
+#home .home-category-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  grid-template-rows: repeat(4, minmax(0, 1fr)) !important;
+  grid-auto-flow: row !important;
+  gap: .8vh 1.1vw !important;
+}
+#home .home-category-grid .menu-card {
+  min-height: 0 !important;
+}
+@media (orientation:portrait) and (max-height:1100px) {
+  #home .wrap {
+    grid-template-rows: 6.5fr 16fr 19fr 30fr 8fr !important;
+    gap: .7vh !important;
+    padding: 1vh 2.2vw !important;
+  }
+  #home .home-category-grid {
+    grid-template-rows: repeat(4, minmax(0, 1fr)) !important;
+  }
+}
+
+</style>
 </head>
 <body>
 
@@ -764,8 +824,7 @@ const categories=[
  {id:"nurseries",icon:"🌱",hi:"भीलवाड़ा की पौधशालाएँ",en:"Plant Nurseries of Bhilwara",img:"https://images.unsplash.com/photo-1416879595882-3373a0480b5b?auto=format&fit=crop&w=1000&q=85",items:[["Namo Nursery, Hamirgarh","नमो नर्सरी, हमीरगढ़"],["Namo Van","नमो वन"],["Lav-Kush Vatika","लव-कुश वाटिका"],["Shyama Prasad Mukherjee Hariyali Van","श्यामा प्रसाद मुखर्जी हरियाली वन"],["Shyama Prasad Mukherjee Van, Chittorgarh","श्यामा प्रसाद मुखर्जी वन, चित्तौड़गढ़"],["Nurseries of Bhilwara","भीलवाड़ा की पौधशालाएँ"],["Plant Growing Process","पौध तैयार करने की प्रक्रिया"],["Native Plant Species","स्थानीय पौधों की प्रजातियाँ"],["Sapling Distribution","पौध वितरण"],["Plantation Guide","वृक्षारोपण के लिए पौधे"]]},
  {id:"ecotourism",icon:"🏞️",hi:"ईको-टूरिज्म स्थल",en:"Eco-Tourism Spots",img:"https://images.unsplash.com/photo-1473448912268-2022ce9509d8?auto=format&fit=crop&w=1000&q=85",items:[["Hamirgarh Conservation Reserve","हमीरगढ़ संरक्षण रिज़र्व"],["Eco Park","ईको पार्क"],["Menal Waterfall, Mandalgarh","मेनाल जलप्रपात, मांडलगढ़"],["Eco-Tourism Spots","ईको-टूरिज्म स्थल"],["Nature Trails","प्रकृति भ्रमण मार्ग"],["Visitor Guidelines","पर्यटकों के लिए दिशा-निर्देश"]]},
  {id:"asop",icon:"🌲",hi:"आसोप संरक्षण रिज़र्व",en:"Asop Conservation Reserve",img:"https://images.unsplash.com/photo-1441974231531-c6227db76b6e?auto=format&fit=crop&w=1000&q=85",items:[["Asop Conservation Reserve","आसोप संरक्षण रिज़र्व"],["Wildlife & Habitat","वन्यजीव एवं प्राकृतिक आवास"],["Conservation Activities","संरक्षण गतिविधियाँ"]]},
- {id:"hariyalo",icon:"🌿",hi:"हरियालो राजस्थान",en:"Hariyalo Rajasthan",img:"https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=1000&q=85",items:[["Hariyalo Rajasthan","हरियालो राजस्थान"],["Tree Plantation","वृक्षारोपण"],["Green Rajasthan Initiative","हरित राजस्थान अभियान"]]},
- {id:"gallery",icon:"📸",hi:"भीलवाड़ा वन विभाग फोटो गैलरी",en:"Photo Gallery of BFD",img:"https://images.unsplash.com/photo-1469474968028-56623f02e42e?auto=format&fit=crop&w=1000&q=85",items:[["Forest & Wildlife Photos","वन एवं वन्यजीव तस्वीरें"],["Plantation Activities","वृक्षारोपण गतिविधियाँ"],["Department Events","विभागीय कार्यक्रम"]]}
+ {id:"hariyalo",icon:"🌿",hi:"हरियालो राजस्थान",en:"Hariyalo Rajasthan",img:"https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=1000&q=85",items:[["Hariyalo Rajasthan","हरियालो राजस्थान"],["Tree Plantation","वृक्षारोपण"],["Green Rajasthan Initiative","हरित राजस्थान अभियान"]]}
 ];
 const thumbs=["https://images.unsplash.com/photo-1557050543-4d5f4e07ef46?auto=format&fit=crop&w=900&q=80","https://images.unsplash.com/photo-1497206365907-f5e630693df0?auto=format&fit=crop&w=900&q=80","https://images.unsplash.com/photo-1516426122078-c23e76319801?auto=format&fit=crop&w=900&q=80","https://images.unsplash.com/photo-1452570053594-1b985d6ea890?auto=format&fit=crop&w=900&q=80"];
 let current=null,timer,lang='hi',playingIndex=0;
