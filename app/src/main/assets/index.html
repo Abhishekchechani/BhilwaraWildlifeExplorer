@@ -929,19 +929,34 @@ function renderCategory(){
 let playerReturnScreen='home';
 function openSampleVideo(){
  playerReturnScreen='category';
+ const sampleVideoUrl='https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4';
+ const sampleVideoTitle='Sample Test Video';
+
+ // Use the native Android Media3 player when the app bridge is available.
+ if(window.AndroidVideo && typeof window.AndroidVideo.playNativeVideo==='function'){
+   try{
+     window.AndroidVideo.playNativeVideo(sampleVideoUrl, sampleVideoTitle);
+   }catch(error){
+     console.error('Unable to launch native video player:', error);
+     alert('Unable to open the native video player. Please check the Android app build.');
+   }
+   return;
+ }
+
+ // Browser fallback for preview/testing outside the Android application.
  stop();
- $('ptitle').textContent='Sample Test Video (Direct MP4)';
+ $('ptitle').textContent=sampleVideoTitle;
  $('driveFrame').style.display='none';
  $('vid').style.display='block';
  $('vid').controls=true;
  $('vid').playsInline=true;
- $('vid').src='https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4';
+ $('vid').src=sampleVideoUrl;
  $('vid').load();
  show('player');
  reset();
  const playAttempt=$('vid').play();
  if(playAttempt && typeof playAttempt.catch==='function'){
-   playAttempt.catch(()=>{ /* User can press the visible Play control if autoplay is restricted. */ });
+   playAttempt.catch(()=>{ /* Use the visible Play control if autoplay is restricted. */ });
  }
 }
 function openMedia(i,mode){
