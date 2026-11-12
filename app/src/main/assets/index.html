@@ -864,10 +864,18 @@ function openCategoryPage(){
 }
 function openFeaturedJourney(){
  playingIndex=0;
- $('ptitle').textContent=t('भीलवाड़ा की 30 मिनट की वन्यजीव यात्रा','Bhilwara • 30-Minute Wildlife Journey');
+ const title=t('भीलवाड़ा की 30 मिनट की वन्यजीव यात्रा','Bhilwara • 30-Minute Wildlife Journey');
+ const driveId='1eNhK794i9EC54FTzFv5uYxtEUZWFL7nB';
+ playerReturnScreen='home';
+ const directUrl='https://drive.google.com/uc?export=download&id='+encodeURIComponent(driveId);
+ if(window.AndroidVideo && typeof window.AndroidVideo.playNativeVideo==='function'){
+   try{window.AndroidVideo.playNativeVideo(directUrl,title);return;}
+   catch(error){console.error('Native featured video launch failed:',error);}
+ }
+ $('ptitle').textContent=title;
  $('vid').pause();$('vid').style.display='none';
  $('driveFrame').style.display='block';
- $('driveFrame').src='https://drive.google.com/file/d/1eNhK794i9EC54FTzFv5uYxtEUZWFL7nB/preview';
+ $('driveFrame').src='https://drive.google.com/file/d/'+driveId+'/preview';
  show('player');reset();
 }
 function openCat(id){
@@ -963,10 +971,33 @@ function openMedia(i,mode){
  playerReturnScreen='category';
  playingIndex=i;
  const item=wildlifeMedia[i];
+ if(!item){console.warn('Media item not found:',i);return;}
+ if(mode==='video'){
+   const directVideoUrl='https://drive.google.com/uc?export=download&id='+encodeURIComponent(item.video);
+   // In the Android app, send every wildlife video to the native Media3 player.
+   if(window.AndroidVideo && typeof window.AndroidVideo.playNativeVideo==='function'){
+     try{
+       window.AndroidVideo.playNativeVideo(directVideoUrl,item.name);
+       return;
+     }catch(error){
+       console.error('Unable to launch native wildlife video:',error);
+       alert('Unable to open this video. Please try again.');
+       return;
+     }
+   }
+   // Outside the Android app, retain the existing Google Drive preview player.
+   $('ptitle').textContent=item.name;
+   $('vid').pause();$('vid').style.display='none';
+   $('driveFrame').style.display='block';
+   $('driveFrame').src='https://drive.google.com/file/d/'+item.video+'/preview';
+   show('player');reset();
+   return;
+ }
+ // Photo gallery continues to use the existing Google Drive image preview.
  $('ptitle').textContent=item.name;
  $('vid').pause();$('vid').style.display='none';
  $('driveFrame').style.display='block';
- $('driveFrame').src='https://drive.google.com/file/d/'+(mode==='gallery'?item.image:item.video)+'/preview';
+ $('driveFrame').src='https://drive.google.com/file/d/'+item.image+'/preview';
  show('player');reset();
 }
 function play(i){
