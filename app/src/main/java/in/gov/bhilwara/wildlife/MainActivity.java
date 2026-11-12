@@ -2,17 +2,19 @@
 package in.gov.bhilwara.wildlife;
 
 import android.app.Activity;
+import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.webkit.ConsoleMessage;
+import android.webkit.JavascriptInterface;
 import android.webkit.WebChromeClient;
 import android.webkit.WebResourceError;
 import android.webkit.WebResourceRequest;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
-import android.widget.Toast;
 
 public class MainActivity extends Activity {
 
@@ -37,15 +39,11 @@ public class MainActivity extends Activity {
 
         settings.setJavaScriptEnabled(true);
         settings.setDomStorageEnabled(true);
-
         settings.setMediaPlaybackRequiresUserGesture(false);
-
         settings.setAllowFileAccess(true);
         settings.setAllowContentAccess(true);
-
         settings.setLoadWithOverviewMode(true);
         settings.setUseWideViewPort(true);
-
         settings.setSupportZoom(false);
         settings.setBuiltInZoomControls(false);
         settings.setDisplayZoomControls(false);
@@ -57,15 +55,20 @@ public class MainActivity extends Activity {
 
         webView.setBackgroundColor(0xFF04251D);
 
+        webView.addJavascriptInterface(
+                new VideoBridge(),
+                "AndroidVideo"
+        );
+
         webView.setWebChromeClient(new WebChromeClient() {
 
             @Override
-            public boolean onConsoleMessage(ConsoleMessage consoleMessage) {
+            public boolean onConsoleMessage(ConsoleMessage message) {
 
                 Log.d(TAG,
-                        "Console: " + consoleMessage.message()
-                                + " | Line: " + consoleMessage.lineNumber()
-                                + " | Source: " + consoleMessage.sourceId()
+                        "Console: " + message.message()
+                                + " | Line: " + message.lineNumber()
+                                + " | Source: " + message.sourceId()
                 );
 
                 return true;
@@ -73,7 +76,7 @@ public class MainActivity extends Activity {
 
             @Override
             public void onProgressChanged(WebView view, int progress) {
-                Log.d(TAG, "Page loading progress: " + progress + "%");
+                Log.d(TAG, "Loading: " + progress + "%");
             }
         });
 
@@ -109,6 +112,38 @@ public class MainActivity extends Activity {
         });
 
         webView.loadUrl("file:///android_asset/index.html");
+    }
+
+    public class VideoBridge {
+
+        @JavascriptInterface
+        public void playNativeVideo(String videoUrl, String videoTitle) {
+
+            if (videoUrl == null || videoUrl.trim().isEmpty()) {
+                Log.e(TAG, "Empty video URL");
+                return;
+            }
+
+            Uri uri = Uri.parse(videoUrl.trim());
+
+            if (!"https".equalsIgnoreCase(uri.getScheme())) {
+                Log.e(TAG, "Only HTTPS video URLs are allowed");
+                return;
+            }
+
+            runOnUiThread(() -> {
+
+                Intent intent = new Intent(
+                        MainActivity.this,
+                        NativeVideoActivity.class
+                );
+
+                intent.putExtra("VIDEO_URL", videoUrl);
+                intent.putExtra("VIDEO_TITLE", videoTitle);
+
+                startActivity(intent);
+            });
+        }
     }
 
     private void enableImmersiveMode() {
