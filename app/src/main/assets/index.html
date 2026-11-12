@@ -899,7 +899,15 @@ let categoryRenderedItems=[];
 function renderCategory(){
  $('ctitle').textContent=current.icon+' '+(lang==='hi'?current.hi:current.en);
  if(current.id==='videoLibrary'){
-   $('videos').innerHTML=wildlifeMedia.map((item,i)=>`<button class="video-card" onclick="openMedia(${i},'video')"><div class="thumb" style="background-image:url('https://drive.google.com/thumbnail?id=${item.image}&sz=w800')"><div class="play">▶</div></div><div class="vtitle">${item.name}</div><div class="vmicro">${t('वीडियो चलाने के लिए स्पर्श करें','Tap to play video')}</div></button>`).join('');
+   $('videos').innerHTML=
+     `<button class="video-card" onclick="openSampleVideo()">
+       <div class="thumb" style="background:linear-gradient(135deg,#164d37,#0a241b);display:grid;place-items:center">
+         <div style="font-size:42px;color:#f1d27a">▶</div>
+       </div>
+       <div class="vtitle">Sample Test Video</div>
+       <div class="vmicro">${t('Google Drive के बिना सीधे वीडियो चलाकर जाँचें','Direct MP4 playback test — no Google Drive')}</div>
+     </button>`+
+     wildlifeMedia.map((item,i)=>`<button class="video-card" onclick="openMedia(${i},'video')"><div class="thumb" style="background-image:url('https://drive.google.com/thumbnail?id=${item.image}&sz=w800')"><div class="play">▶</div></div><div class="vtitle">${item.name}</div><div class="vmicro">${t('वीडियो चलाने के लिए स्पर्श करें','Tap to play video')}</div></button>`).join('');
    return;
  }
  if(current.id==='gallery'){
@@ -919,6 +927,23 @@ function renderCategory(){
  }).join('');
 }
 let playerReturnScreen='home';
+function openSampleVideo(){
+ playerReturnScreen='category';
+ stop();
+ $('ptitle').textContent='Sample Test Video (Direct MP4)';
+ $('driveFrame').style.display='none';
+ $('vid').style.display='block';
+ $('vid').controls=true;
+ $('vid').playsInline=true;
+ $('vid').src='https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4';
+ $('vid').load();
+ show('player');
+ reset();
+ const playAttempt=$('vid').play();
+ if(playAttempt && typeof playAttempt.catch==='function'){
+   playAttempt.catch(()=>{ /* User can press the visible Play control if autoplay is restricted. */ });
+ }
+}
 function openMedia(i,mode){
  playerReturnScreen='category';
  playingIndex=i;
