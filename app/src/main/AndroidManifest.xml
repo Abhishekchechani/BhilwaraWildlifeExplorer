@@ -14,12 +14,10 @@
         <activity
             android:name=".NativeVideoActivity"
             android:exported="false"
-            android:screenOrientation="portrait"
-            android:hardwareAccelerated="true" />
+            android:screenOrientation="portrait" />
 
         <activity
             android:name=".MainActivity"
-            android:configChanges="orientation|screenSize|keyboardHidden"
             android:exported="true"
             android:screenOrientation="portrait"
             android:hardwareAccelerated="true">
@@ -32,5 +30,4 @@
         </activity>
 
     </application>
-
 </manifest>
