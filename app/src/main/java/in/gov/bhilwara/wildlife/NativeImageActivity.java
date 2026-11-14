@@ -10,7 +10,6 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
-import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -18,117 +17,136 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.io.File;
-import java.io.InputStream;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
+/** Full-screen local photo viewer with visible back navigation and swipe support. */
 public class NativeImageActivity extends Activity {
-    private final ExecutorService executor = Executors.newSingleThreadExecutor();
     private JSONArray items;
     private int index = 0;
     private ImageView imageView;
-    private ProgressBar progress;
-    private TextView titleView, counterView;
-    private float downX, downY;
+    private TextView titleView;
+    private TextView countView;
+    private float downX;
 
     @Override protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         enableImmersiveMode();
-        try { items = new JSONArray(getIntent().getStringExtra("IMAGE_ITEMS_JSON")); }
-        catch (Exception e) { items = new JSONArray(); }
-        index = Math.max(0, Math.min(getIntent().getIntExtra("IMAGE_START_INDEX", 0), items.length()-1));
+        try {
+            items = new JSONArray(getIntent().getStringExtra("IMAGE_ITEMS_JSON"));
+            index = Math.max(0, Math.min(getIntent().getIntExtra("IMAGE_START_INDEX", 0), items.length() - 1));
+        } catch (Exception e) {
+            Toast.makeText(this, "Photo list is unavailable.", Toast.LENGTH_LONG).show();
+            finish();
+            return;
+        }
         if (items.length() == 0) { finish(); return; }
 
-        FrameLayout root = new FrameLayout(this); root.setBackgroundColor(Color.BLACK);
-        imageView = new ImageView(this); imageView.setBackgroundColor(Color.BLACK);
+        FrameLayout root = new FrameLayout(this);
+        root.setBackgroundColor(Color.BLACK);
+        imageView = new ImageView(this);
+        imageView.setBackgroundColor(Color.BLACK);
         imageView.setScaleType(ImageView.ScaleType.FIT_CENTER);
         root.addView(imageView, new FrameLayout.LayoutParams(-1, -1));
-        imageView.setOnTouchListener((v, event) -> handleSwipe(event));
-        progress = new ProgressBar(this);
-        root.addView(progress, new FrameLayout.LayoutParams(96, 96, Gravity.CENTER));
 
-        TextView close = new TextView(this); close.setText("✕"); close.setTextColor(Color.WHITE);
-        close.setTextSize(28); close.setGravity(Gravity.CENTER); close.setBackgroundColor(0x99000000);
-        FrameLayout.LayoutParams cp = new FrameLayout.LayoutParams(64,64,Gravity.TOP|Gravity.END); cp.setMargins(16,16,16,16);
-        root.addView(close,cp); close.setOnClickListener(v -> finish());
+        FrameLayout topBar = new FrameLayout(this);
+        topBar.setBackgroundColor(0xCC082C20);
+        FrameLayout.LayoutParams topParams = new FrameLayout.LayoutParams(-1, dp(62), Gravity.TOP);
+        root.addView(topBar, topParams);
 
-        titleView = new TextView(this); titleView.setTextColor(Color.WHITE); titleView.setTextSize(16);
-        titleView.setPadding(20,14,20,14); titleView.setBackgroundColor(0x99000000);
-        FrameLayout.LayoutParams tp = new FrameLayout.LayoutParams(-1,-2,Gravity.BOTTOM); root.addView(titleView,tp);
-        counterView = new TextView(this); counterView.setTextColor(Color.WHITE); counterView.setTextSize(14);
-        counterView.setPadding(12,8,12,8); counterView.setBackgroundColor(0x99000000); counterView.setGravity(Gravity.CENTER);
-        FrameLayout.LayoutParams np = new FrameLayout.LayoutParams(-2,-2,Gravity.TOP|Gravity.CENTER_HORIZONTAL); np.topMargin=18; root.addView(counterView,np);
+        TextView back = new TextView(this);
+        back.setText("‹  Back");
+        back.setTextColor(Color.WHITE);
+        back.setTextSize(18);
+        back.setGravity(Gravity.CENTER);
+        back.setPadding(dp(16), 0, dp(16), 0);
+        topBar.addView(back, new FrameLayout.LayoutParams(dp(112), -1, Gravity.START | Gravity.CENTER_VERTICAL));
+        back.setOnClickListener(v -> finish());
 
-        TextView prev = navButton("‹"); FrameLayout.LayoutParams pp = new FrameLayout.LayoutParams(56,80,Gravity.CENTER_VERTICAL|Gravity.START); pp.leftMargin=8; root.addView(prev,pp); prev.setOnClickListener(v -> showAt(index-1));
-        TextView next = navButton("›"); FrameLayout.LayoutParams np2 = new FrameLayout.LayoutParams(56,80,Gravity.CENTER_VERTICAL|Gravity.END); np2.rightMargin=8; root.addView(next,np2); next.setOnClickListener(v -> showAt(index+1));
-        setContentView(root); showAt(index);
+        countView = new TextView(this);
+        countView.setTextColor(Color.WHITE);
+        countView.setTextSize(14);
+        countView.setGravity(Gravity.CENTER);
+        FrameLayout.LayoutParams countParams = new FrameLayout.LayoutParams(dp(80), -1, Gravity.END | Gravity.CENTER_VERTICAL);
+        topBar.addView(countView, countParams);
+
+        titleView = new TextView(this);
+        titleView.setTextColor(Color.WHITE);
+        titleView.setTextSize(16);
+        titleView.setGravity(Gravity.CENTER);
+        titleView.setMaxLines(2);
+        titleView.setPadding(dp(18), dp(12), dp(18), dp(12));
+        titleView.setBackgroundColor(0xCC082C20);
+        FrameLayout.LayoutParams titleParams = new FrameLayout.LayoutParams(-1, FrameLayout.LayoutParams.WRAP_CONTENT, Gravity.BOTTOM);
+        root.addView(titleView, titleParams);
+
+        TextView previous = navButton("‹", Gravity.START | Gravity.CENTER_VERTICAL);
+        TextView next = navButton("›", Gravity.END | Gravity.CENTER_VERTICAL);
+        root.addView(previous, new FrameLayout.LayoutParams(dp(58), dp(76), Gravity.START | Gravity.CENTER_VERTICAL));
+        root.addView(next, new FrameLayout.LayoutParams(dp(58), dp(76), Gravity.END | Gravity.CENTER_VERTICAL));
+        previous.setOnClickListener(v -> showImage(index - 1));
+        next.setOnClickListener(v -> showImage(index + 1));
+
+        imageView.setOnTouchListener((v, event) -> {
+            if (event.getAction() == MotionEvent.ACTION_DOWN) { downX = event.getX(); return true; }
+            if (event.getAction() == MotionEvent.ACTION_UP) {
+                float dx = event.getX() - downX;
+                if (Math.abs(dx) > dp(55)) showImage(index + (dx < 0 ? 1 : -1));
+                return true;
+            }
+            return true;
+        });
+
+        setContentView(root);
+        showImage(index);
     }
 
-    private TextView navButton(String text) { TextView t=new TextView(this); t.setText(text); t.setTextColor(Color.WHITE); t.setTextSize(42); t.setGravity(Gravity.CENTER); t.setBackgroundColor(0x55000000); return t; }
-
-    private boolean handleSwipe(MotionEvent e) {
-        if (e.getAction()==MotionEvent.ACTION_DOWN) { downX=e.getX(); downY=e.getY(); return true; }
-        if (e.getAction()==MotionEvent.ACTION_UP) {
-            float dx=e.getX()-downX, dy=e.getY()-downY;
-            if (Math.abs(dx)>70 && Math.abs(dx)>Math.abs(dy)*1.2f) { showAt(index+(dx<0?1:-1)); return true; }
-            imageView.performClick(); return true;
-        }
-        return true;
+    private TextView navButton(String label, int gravity) {
+        TextView button = new TextView(this);
+        button.setText(label);
+        button.setTextColor(Color.WHITE);
+        button.setTextSize(42);
+        button.setGravity(Gravity.CENTER);
+        button.setBackgroundColor(0x55000000);
+        return button;
     }
 
-    private void showAt(int newIndex) {
-        if (newIndex<0) newIndex=items.length()-1;
-        if (newIndex>=items.length()) newIndex=0;
-        index=newIndex;
+    private void showImage(int requested) {
+        if (requested < 0 || requested >= items.length()) return;
+        index = requested;
         try {
-            JSONObject item=items.getJSONObject(index);
-            String title=item.optString("title","Photo"); String source=item.optString("source",""); boolean local=item.optBoolean("local",false);
-            titleView.setText(title); counterView.setText((index+1)+" / "+items.length());
-            progress.setVisibility(View.VISIBLE); imageView.setImageDrawable(null);
-            final String sourceCopy=source; final boolean localCopy=local;
-            executor.execute(() -> {
-                try {
-                    Bitmap bitmap;
-                    if (localCopy) bitmap=decodeLocal(sourceCopy);
-                    else bitmap=decodeRemote(sourceCopy);
-                    runOnUiThread(() -> { if (!isFinishing() && !isDestroyed()) { imageView.setImageBitmap(bitmap); progress.setVisibility(View.GONE); } });
-                } catch (Exception ex) {
-                    runOnUiThread(() -> { if (!isFinishing() && !isDestroyed()) { progress.setVisibility(View.GONE); Toast.makeText(this,"Unable to load "+title,Toast.LENGTH_SHORT).show(); } });
-                }
-            });
-        } catch (Exception ignored) { }
+            JSONObject item = items.getJSONObject(index);
+            String title = item.optString("title", "Photo");
+            String path = item.optString("source", "");
+            File file = new File(path);
+            if (!file.isFile() || !file.canRead()) throw new Exception("Image file not accessible: " + file.getName());
+            BitmapFactory.Options bounds = new BitmapFactory.Options();
+            bounds.inJustDecodeBounds = true;
+            BitmapFactory.decodeFile(file.getAbsolutePath(), bounds);
+            if (bounds.outWidth <= 0 || bounds.outHeight <= 0) throw new Exception("Unsupported image format");
+            int targetW = getResources().getDisplayMetrics().widthPixels;
+            int targetH = getResources().getDisplayMetrics().heightPixels;
+            BitmapFactory.Options options = new BitmapFactory.Options();
+            options.inSampleSize = sampleSize(bounds, targetW, targetH);
+            options.inPreferredConfig = Bitmap.Config.RGB_565;
+            Bitmap bitmap = BitmapFactory.decodeFile(file.getAbsolutePath(), options);
+            if (bitmap == null) throw new Exception("Could not decode image");
+            imageView.setImageBitmap(bitmap);
+            titleView.setText(title);
+            countView.setText((index + 1) + " / " + items.length());
+        } catch (Exception e) {
+            Toast.makeText(this, "Unable to open photo: " + e.getMessage(), Toast.LENGTH_LONG).show();
+        }
     }
 
-    private Bitmap decodeLocal(String path) throws Exception {
-        BitmapFactory.Options bounds=new BitmapFactory.Options(); bounds.inJustDecodeBounds=true; BitmapFactory.decodeFile(path,bounds);
-        if(bounds.outWidth<=0||bounds.outHeight<=0) throw new IllegalStateException("Invalid local image");
-        BitmapFactory.Options opts=new BitmapFactory.Options(); opts.inSampleSize=sample(bounds.outWidth,bounds.outHeight);
-        opts.inPreferredConfig=Bitmap.Config.RGB_565; Bitmap b=BitmapFactory.decodeFile(path,opts);
-        if(b==null) throw new IllegalStateException("Image decode failed"); return b;
+    private int sampleSize(BitmapFactory.Options bounds, int width, int height) {
+        int sample = 1;
+        while (bounds.outWidth / (sample * 2) >= width && bounds.outHeight / (sample * 2) >= height) sample *= 2;
+        return Math.max(1, sample);
     }
 
-    private Bitmap decodeRemote(String original) throws Exception {
-        String url=original, cookies="";
-        if(original.contains("drive.google.com")) { DriveVideoResolver.ResolvedVideo r=DriveVideoResolver.resolve(original); url=r.url; cookies=r.cookieHeader; }
-        HttpURLConnection c=(HttpURLConnection)new URL(url).openConnection(); c.setConnectTimeout(20000); c.setReadTimeout(30000); c.setInstanceFollowRedirects(true);
-        c.setRequestProperty("User-Agent","Mozilla/5.0 (Linux; Android 11) AppleWebKit/537.36 Chrome/120.0 Mobile Safari/537.36");
-        if(cookies!=null&&!cookies.isEmpty()) c.setRequestProperty("Cookie",cookies);
-        int status=c.getResponseCode(); String ct=c.getContentType();
-        if(status<200||status>=300||(ct!=null&&ct.toLowerCase().contains("text/html"))) { c.disconnect(); throw new IllegalStateException("Image server returned non-image response"); }
-        try(InputStream in=c.getInputStream()) {
-            BitmapFactory.Options bounds=new BitmapFactory.Options(); bounds.inJustDecodeBounds=true; BitmapFactory.decodeStream(in,null,bounds);
-            if(bounds.outWidth<=0||bounds.outHeight<=0) throw new IllegalStateException("Invalid image");
-        } finally { c.disconnect(); }
-        HttpURLConnection c2=(HttpURLConnection)new URL(url).openConnection(); c2.setConnectTimeout(20000); c2.setReadTimeout(30000); c2.setInstanceFollowRedirects(true);
-        if(cookies!=null&&!cookies.isEmpty()) c2.setRequestProperty("Cookie",cookies);
-        try(InputStream in=c2.getInputStream()) { BitmapFactory.Options opts=new BitmapFactory.Options(); opts.inSampleSize=sample(2400,2400); opts.inPreferredConfig=Bitmap.Config.RGB_565; Bitmap b=BitmapFactory.decodeStream(in,null,opts); if(b==null) throw new IllegalStateException("Decode failed"); return b; }
-        finally { c2.disconnect(); }
+    private int dp(float value) { return (int) (value * getResources().getDisplayMetrics().density + .5f); }
+    private void enableImmersiveMode() {
+        getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY | View.SYSTEM_UI_FLAG_FULLSCREEN | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION | View.SYSTEM_UI_FLAG_LAYOUT_STABLE);
     }
-
-    private int sample(int w,int h) { int reqW=getResources().getDisplayMetrics().widthPixels, reqH=getResources().getDisplayMetrics().heightPixels; int n=1; while(w/(n*2)>=reqW && h/(n*2)>=reqH) n*=2; return n; }
-    private void enableImmersiveMode() { getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY|View.SYSTEM_UI_FLAG_FULLSCREEN|View.SYSTEM_UI_FLAG_HIDE_NAVIGATION|View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN|View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION|View.SYSTEM_UI_FLAG_LAYOUT_STABLE); }
-    @Override public void onWindowFocusChanged(boolean f) { super.onWindowFocusChanged(f); if(f) enableImmersiveMode(); }
-    @Override public void onDestroy() { executor.shutdownNow(); super.onDestroy(); }
+    @Override public void onWindowFocusChanged(boolean hasFocus) { super.onWindowFocusChanged(hasFocus); if (hasFocus) enableImmersiveMode(); }
+    @Override public void onBackPressed() { finish(); }
 }
