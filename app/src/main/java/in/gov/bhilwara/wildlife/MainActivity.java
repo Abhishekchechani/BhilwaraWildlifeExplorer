@@ -42,6 +42,7 @@ public class MainActivity extends Activity {
     private View journeyPreviewTapLayer;
     private ExoPlayer journeyPreviewPlayer;
     private File journeyPreviewFile;
+    private volatile boolean launchingMediaActivity = false;
 
     @Override protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -206,62 +207,54 @@ public class MainActivity extends Activity {
         }
 
         @JavascriptInterface public void playNativeVideoPlaylist(String playlistJson, int startIndex, String videoTitle) {
-            if (playlistJson == null || playlistJson.trim().isEmpty()) return;
-            runOnUiThread(() -> {
+            if (playlistJson == null || playlistJson.trim().isEmpty() || launchingMediaActivity) return;
+            launchingMediaActivity = true;
+            new Thread(() -> {
+                String selectedTitle = videoTitle == null ? "Wildlife video" : videoTitle;
+                File local = null;
                 try {
                     JSONArray input = new JSONArray(playlistJson);
-                    JSONArray resolved = new JSONArray();
-                    int resolvedStartIndex = -1;
-                    boolean selectedLocalVideoMissing = false;
-                    for (int i = 0; i < input.length(); i++) {
-                        JSONObject source = input.getJSONObject(i);
-                        String title = source.optString("title", "Wildlife video");
-                        String key = source.optString("key", "");
-                        boolean localOnly = source.optBoolean("localOnly", false);
-                        JSONObject item = new JSONObject();
-                        item.put("title", title);
-
-                        if (key.startsWith("http://") || key.startsWith("https://")) {
-                            item.put("url", key);
-                        } else {
-                            File local = findVideo(title);
-                            if (local != null && local.isFile()) {
-                                if (i == startIndex) resolvedStartIndex = resolved.length();
-                                item.put("path", local.getAbsolutePath());
-                            } else if (localOnly) {
-                                if (i == startIndex) selectedLocalVideoMissing = true;
-                                // A local-only category item must never be sent to Drive with a title as its ID.
-                                continue;
-                            } else {
-                                if (i == startIndex) resolvedStartIndex = resolved.length();
-                                item.put("url", "https://drive.google.com/uc?export=download&id=" + Uri.encode(key));
-                            }
+                    if (input.length() == 0) throw new Exception("No video was selected.");
+                    int safeIndex = Math.max(0, Math.min(startIndex, input.length() - 1));
+                    JSONObject selected = input.getJSONObject(safeIndex);
+                    selectedTitle = selected.optString("title", selectedTitle);
+                    // Ignore every URL or Drive ID. The app only plays files found in local storage.
+                    local = findVideo(selectedTitle);
+                    if (local == null || !local.isFile() || !local.canRead()) {
+                        throw new Exception("Local video not found: " + selectedTitle);
+                    }
+                    File finalLocal = local;
+                    String finalTitle = selectedTitle;
+                    runOnUiThread(() -> {
+                        if (isFinishing() || isDestroyed()) { launchingMediaActivity = false; return; }
+                        try {
+                            Intent intent = new Intent(MainActivity.this, NativeVideoActivity.class);
+                            intent.putExtra("VIDEO_URL", Uri.fromFile(finalLocal).toString());
+                            intent.putExtra("VIDEO_TITLE", finalTitle);
+                            startActivity(intent);
+                        } catch (Exception e) {
+                            launchingMediaActivity = false;
+                            Toast.makeText(MainActivity.this, "Unable to open local video: " + e.getMessage(), Toast.LENGTH_LONG).show();
                         }
-                        resolved.put(item);
-                    }
-                    if (selectedLocalVideoMissing) {
-                        String missingTitle = videoTitle == null ? "selected category video" : videoTitle;
-                        Toast.makeText(MainActivity.this, "Local video not found: " + missingTitle, Toast.LENGTH_LONG).show();
-                        return;
-                    }
-                    if (resolved.length() == 0) {
-                        Toast.makeText(MainActivity.this, "No local videos found in bhilwara_forest_department.", Toast.LENGTH_LONG).show();
-                        return;
-                    }
-                    if (resolvedStartIndex < 0) resolvedStartIndex = 0;
-                    Intent intent = new Intent(MainActivity.this, NativeVideoActivity.class);
-                    intent.putExtra("VIDEO_PLAYLIST_JSON", resolved.toString());
-                    intent.putExtra("VIDEO_START_INDEX", Math.max(0, Math.min(resolvedStartIndex, resolved.length() - 1)));
-                    intent.putExtra("VIDEO_TITLE", videoTitle == null ? "Wildlife video" : videoTitle);
-                    startActivity(intent);
+                    });
                 } catch (Exception e) {
-                    Toast.makeText(MainActivity.this, "Unable to prepare video playlist.", Toast.LENGTH_LONG).show();
+                    String message = e.getMessage() == null ? "Local video is unavailable." : e.getMessage();
+                    runOnUiThread(() -> {
+                        launchingMediaActivity = false;
+                        Toast.makeText(MainActivity.this, message, Toast.LENGTH_LONG).show();
+                    });
                 }
-            });
+            }, "local-video-lookup").start();
         }
+
     }
 
     public class ImageBridge {
+        @JavascriptInterface public String getLocalImageUri(String imageTitle) {
+            File local = findLocalImage(imageTitle);
+            return local != null && local.isFile() && local.canRead() ? Uri.fromFile(local).toString() : "";
+        }
+
         @JavascriptInterface public String getHomeSlideshowImages() {
             JSONArray images = new JSONArray();
             File root = rootFolder();
@@ -279,30 +272,47 @@ public class MainActivity extends Activity {
             openNativeImageGallery(a.toString(), 0);
         }
         @JavascriptInterface public void openNativeImageGallery(String imagesJson, int startIndex) {
-            runOnUiThread(() -> {
+            if (launchingMediaActivity) return;
+            launchingMediaActivity = true;
+            new Thread(() -> {
                 try {
                     JSONArray input = new JSONArray(imagesJson);
                     JSONArray resolved = new JSONArray();
                     for (int i = 0; i < input.length(); i++) {
                         JSONObject item = input.getJSONObject(i);
                         String title = item.optString("title", "Photo " + (i + 1));
-                        String url = item.optString("url", "");
                         File local = findLocalImage(title);
+                        if (local == null || !local.isFile() || !local.canRead()) {
+                            throw new Exception("Local photo not found: " + title);
+                        }
                         JSONObject out = new JSONObject();
                         out.put("title", title);
-                        out.put("source", local != null ? local.getAbsolutePath() : url);
-                        out.put("local", local != null);
+                        out.put("source", local.getAbsolutePath());
+                        out.put("local", true);
                         resolved.put(out);
                     }
-                    Intent intent = new Intent(MainActivity.this, NativeImageActivity.class);
-                    intent.putExtra("IMAGE_ITEMS_JSON", resolved.toString());
-                    intent.putExtra("IMAGE_START_INDEX", startIndex);
-                    startActivity(intent);
+                    int selected = Math.max(0, Math.min(startIndex, Math.max(0, resolved.length() - 1)));
+                    runOnUiThread(() -> {
+                        try {
+                            Intent intent = new Intent(MainActivity.this, NativeImageActivity.class);
+                            intent.putExtra("IMAGE_ITEMS_JSON", resolved.toString());
+                            intent.putExtra("IMAGE_START_INDEX", selected);
+                            startActivity(intent);
+                        } catch (Exception e) {
+                            launchingMediaActivity = false;
+                            Toast.makeText(MainActivity.this, "Unable to open local photo gallery.", Toast.LENGTH_LONG).show();
+                        }
+                    });
                 } catch (Exception e) {
-                    Toast.makeText(MainActivity.this, "Unable to open photo gallery.", Toast.LENGTH_LONG).show();
+                    String message = e.getMessage() == null ? "Local photos are unavailable." : e.getMessage();
+                    runOnUiThread(() -> {
+                        launchingMediaActivity = false;
+                        Toast.makeText(MainActivity.this, message, Toast.LENGTH_LONG).show();
+                    });
                 }
-            });
+            }, "local-image-lookup").start();
         }
+
     }
 
     private void collectSlideshowImages(File folder, JSONArray output) {
@@ -355,7 +365,10 @@ public class MainActivity extends Activity {
             journeyPreviewTapLayer = new View(this);
             journeyPreviewTapLayer.setBackgroundColor(Color.TRANSPARENT);
             journeyPreviewTapLayer.setOnClickListener(v -> {
-                if (journeyPreviewPlayer != null) journeyPreviewPlayer.pause();
+                if (launchingMediaActivity) return;
+                // Release the small preview player before opening the same file full-screen.
+                // Re-create it after the full-screen player is closed to avoid concurrent reads.
+                releaseJourneyPreview();
                 new VideoBridge().playFeaturedJourney();
             });
             rootContainer.addView(journeyPreviewTapLayer, new FrameLayout.LayoutParams(1, 1));
@@ -437,9 +450,21 @@ public class MainActivity extends Activity {
     private void enableImmersiveMode() {
         getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_FULLSCREEN | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY | View.SYSTEM_UI_FLAG_LAYOUT_STABLE | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION);
     }
+    @Override protected void onPause() {
+        if (journeyPreviewPlayer != null) journeyPreviewPlayer.pause();
+        super.onPause();
+    }
+
     @Override protected void onResume() {
         super.onResume();
-        if (journeyPreviewPlayer != null) journeyPreviewPlayer.play();
+        launchingMediaActivity = false;
+        updateStorageStatus();
+        // Rebuild the preview player after returning from the full-screen player.
+        if (journeyPreviewFile != null && journeyPreviewFile.isFile()) {
+            ensureJourneyPreview();
+            if (webView != null) webView.post(() -> webView.evaluateJavascript(
+                    "if(window.refreshHomeMedia){window.refreshHomeMedia();}", null));
+        }
     }
 
     @Override public void onWindowFocusChanged(boolean hasFocus) { super.onWindowFocusChanged(hasFocus); if (hasFocus) enableImmersiveMode(); }
