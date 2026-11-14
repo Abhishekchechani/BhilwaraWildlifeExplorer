@@ -930,13 +930,6 @@ function renderCategory(){
  $('ctitle').textContent=current.icon+' '+(lang==='hi'?current.hi:current.en);
  if(current.id==='videoLibrary'){
    $('videos').innerHTML=
-     `<button class="video-card" onclick="openSampleVideo()">
-       <div class="thumb" style="background:linear-gradient(135deg,#164d37,#0a241b);display:grid;place-items:center">
-         <div style="font-size:42px;color:#f1d27a">▶</div>
-       </div>
-       <div class="vtitle">Sample Test Video</div>
-       <div class="vmicro">${t('Google Drive के बिना सीधे वीडियो चलाकर जाँचें','Direct MP4 playback test — no Google Drive')}</div>
-     </button>`+
      wildlifeMedia.map((item,i)=>`<button class="video-card" onclick="openMedia(${i},'video')"><div class="thumb" style="background-image:url('https://drive.google.com/thumbnail?id=${item.image}&sz=w800')"><div class="play">▶</div></div><div class="vtitle">${item.name}</div><div class="vmicro">${t('वीडियो चलाने के लिए स्पर्श करें','Tap to play video')}</div></button>`).join('');
    return;
  }
@@ -1060,22 +1053,22 @@ function openMedia(i,mode){
 }
 function play(i){
  playerReturnScreen='category';
- const pair=categoryRenderedItems[i] || current.items[i];
- const media=findWildlifeMedia(pair);
- if(media){
-   const index=wildlifeMedia.indexOf(media);
-   openMedia(index,'video');
- } else {
-   playingIndex=i;
-   $('ptitle').textContent=pair[lang==='hi'?1:0];
-   $('driveFrame').src='';
-   $('driveFrame').style.display='none';
-   $('vid').style.display='block';
-   $('vid').removeAttribute('src');
-   $('vid').load();
-   $('ptitle').textContent=t('इस सामग्री का वीडियो अभी उपलब्ध नहीं है','Video not available for this item yet');
-   show('player');reset();
+ const pair=categoryRenderedItems[i] || (current && current.items ? current.items[i] : null);
+ if(!pair){console.warn('Category video item not found:',i);return;}
+ const selectedTitle=pair[0];
+ // Every category uses its local folder/file naming convention:
+ // <root>/<English title>/<English title>.mp4
+ if(window.AndroidVideo && typeof window.AndroidVideo.playNativeVideoPlaylist==='function'){
+   const categoryPlaylist=(categoryRenderedItems && categoryRenderedItems.length ? categoryRenderedItems : [pair])
+     .map(entry=>({title:entry[0],key:entry[0],localOnly:true}));
+   window.AndroidVideo.playNativeVideoPlaylist(JSON.stringify(categoryPlaylist),i,selectedTitle);
+   return;
  }
+ // Browser preview cannot read Android private/external storage paths. Do not play a fake sample.
+ $('ptitle').textContent=selectedTitle;
+ $('vid').pause();$('vid').removeAttribute('src');$('vid').load();
+ $('driveFrame').src='';$('driveFrame').style.display='none';$('vid').style.display='none';
+ alert(t('स्थानीय वीडियो देखने के लिए कृपया Android पैनल ऐप का उपयोग करें।','Local category videos are available in the Android panel app.'));
 }
 function closeVideo(){stop();show(playerReturnScreen==='category'?'category':'home');reset()}
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&$('player').classList.contains('active'))closeVideo()});
