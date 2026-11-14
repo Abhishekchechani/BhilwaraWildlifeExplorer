@@ -867,9 +867,8 @@ function openFeaturedJourney(){
  const title=t('भीलवाड़ा की 30 मिनट की वन्यजीव यात्रा','Bhilwara • 30-Minute Wildlife Journey');
  const driveId='1eNhK794i9EC54FTzFv5uYxtEUZWFL7nB';
  playerReturnScreen='home';
- const directUrl='https://drive.google.com/uc?export=download&id='+encodeURIComponent(driveId);
  if(window.AndroidVideo && typeof window.AndroidVideo.playNativeVideo==='function'){
-   try{window.AndroidVideo.playNativeVideo(directUrl,title);return;}
+   try{window.AndroidVideo.playNativeVideo(driveId,title);return;}
    catch(error){console.error('Native featured video launch failed:',error);}
  }
  $('ptitle').textContent=title;
@@ -973,11 +972,10 @@ function openMedia(i,mode){
  const item=wildlifeMedia[i];
  if(!item){console.warn('Media item not found:',i);return;}
  if(mode==='video'){
-   const directVideoUrl='https://drive.google.com/uc?export=download&id='+encodeURIComponent(item.video);
-   // In the Android app, send every wildlife video to the native Media3 player.
+   // Send the stable video ID to Android. The native app plays its local copy first.
    if(window.AndroidVideo && typeof window.AndroidVideo.playNativeVideo==='function'){
      try{
-       window.AndroidVideo.playNativeVideo(directVideoUrl,item.name);
+       window.AndroidVideo.playNativeVideo(item.video,item.name);
        return;
      }catch(error){
        console.error('Unable to launch native wildlife video:',error);
@@ -993,7 +991,19 @@ function openMedia(i,mode){
    show('player');reset();
    return;
  }
- // Photo gallery continues to use the existing Google Drive image preview.
+ // In the Android app, open Google Drive photos in a native Android ImageView.
+ const directImageUrl='https://drive.google.com/uc?export=download&id='+encodeURIComponent(item.image);
+ if(window.AndroidImage && typeof window.AndroidImage.openNativeImage==='function'){
+   try{
+     window.AndroidImage.openNativeImage(directImageUrl,item.name);
+     return;
+   }catch(error){
+     console.error('Unable to launch native image viewer:',error);
+     alert('Unable to open this photo. Please try again.');
+     return;
+   }
+ }
+ // Browser fallback for preview/testing outside the Android application.
  $('ptitle').textContent=item.name;
  $('vid').pause();$('vid').style.display='none';
  $('driveFrame').style.display='block';
