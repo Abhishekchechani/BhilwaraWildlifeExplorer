@@ -970,11 +970,16 @@ function play(i){
 }
 function closeVideo(){stop();show(playerReturnScreen==='category'?'category':'home');reset()}
 window.swipeCategory = function(direction){
- if(!current || current.id==='gallery' || current.id==='videoLibrary') return;
- const index=categories.findIndex(c=>c.id===current.id);
- if(index<0) return;
- const next=(index+(direction<0?-1:1)+categories.length)%categories.length;
- openCat(categories[next].id);
+ if(!current) return;
+ // Keep the special media pages in the same left/right navigation sequence
+ // so swiping works from every category, including Photo Gallery and Video Library.
+ const navigationIds = categories.map(c=>c.id).concat(['gallery','videoLibrary']);
+ const index = navigationIds.indexOf(current.id);
+ if(index < 0) return;
+ const next = (index + (direction < 0 ? -1 : 1) + navigationIds.length) % navigationIds.length;
+ const nextId = navigationIds[next];
+ if(nextId === 'videoLibrary') openVideoLibrary();
+ else openCat(nextId);
 };
 
 function handleAndroidBack(){
@@ -1173,9 +1178,10 @@ renderHome();reset();
 <script id="restored-horizontal-swipe-navigation">
 (function(){
   let startX=0, startY=0, startTarget=null, lastSwipeAt=0;
-  const threshold=65;
+  const threshold=42;
   function onStart(e){
-    const t=e.touches && e.touches[0]; if(!t)return;
+    if(!e.touches || e.touches.length !== 1) return;
+    const t=e.touches[0];
     startX=t.clientX; startY=t.clientY; startTarget=e.target;
   }
   function onEnd(e){
@@ -1216,4 +1222,18 @@ renderHome();reset();
 #catmenu .nav, #category .nav{position:fixed!important;top:12px!important;left:14px!important;z-index:10000!important;display:block!important;visibility:visible!important;opacity:1!important}
 #catmenu .nav button, #category .nav button{display:block!important;min-height:48px!important;padding:11px 19px!important;border:1px solid #f0d98a!important;border-radius:28px!important;background:#064a36!important;color:#fff!important;font-size:16px!important;font-weight:800!important;box-shadow:0 3px 12px #00180f99!important}
 #player .close{position:fixed!important;top:14px!important;left:14px!important;right:auto!important;z-index:10001!important;display:block!important;min-height:48px!important;padding:11px 18px!important;background:#07523c!important;color:#fff!important;border:1px solid #f0d98a!important;font-size:16px!important;font-weight:800!important}
+</style>
+
+<style id="home-hero-video-space-balance-and-category-swipe-fix">
+/* Keep the home layout unchanged, transferring a little height from the first poster to the video journey block. */
+#home .wrap {
+  grid-template-rows: 6.5fr 13fr 22fr 30fr 8fr !important;
+}
+@media (orientation:portrait) and (max-height:1100px) {
+  #home .wrap { grid-template-rows: 6.5fr 13fr 22fr 30fr 8fr !important; }
+}
+/* Make horizontal gestures work when they begin anywhere in category, photo gallery, or video library content. */
+#category, #category .category-wrap, #category .video-grid, #category .video-card {
+  touch-action: pan-y !important;
+}
 </style>
