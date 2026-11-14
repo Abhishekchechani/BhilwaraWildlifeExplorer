@@ -154,10 +154,67 @@ public class MainActivity extends Activity {
     }
 
     private File findLocalImage(String title) {
-        File root = rootFolder(); if (root == null) return null;
-        File images = new File(root, "30 front images");
-        if (!images.isDirectory()) return null;
-        return findByName(images, normalize(title), true);
+        File root = rootFolder();
+        if (root == null || title == null || title.trim().isEmpty()) return null;
+
+        // Check the expected image folder first, but support common folder-name variations.
+        String[] imageFolderNames = new String[] {
+                "30 front images", "30 front image", "30_front_images", "images",
+                "photos", "photo gallery", "gallery", "wildlife images"
+        };
+        for (String folderName : imageFolderNames) {
+            File folder = new File(root, folderName);
+            if (folder.isDirectory() && folder.canRead()) {
+                File match = findBestImageMatch(folder, title);
+                if (match != null) return match;
+            }
+        }
+        // Some installations keep photos directly in the main media folder or nested elsewhere.
+        return findBestImageMatch(root, title);
+    }
+
+    private File findBestImageMatch(File folder, String title) {
+        java.util.ArrayList<File> files = new java.util.ArrayList<>();
+        collectImageFiles(folder, files, 0);
+        String wanted = normalize(title);
+        if (wanted.isEmpty()) return null;
+        File best = null;
+        int bestScore = 0;
+        for (File file : files) {
+            String base = file.getName().replaceFirst("(?i)\\.[^.]+$", "")
+                    .replaceFirst("^[0-9]+[\\s._-]*", "");
+            String candidate = normalize(base);
+            if (candidate.isEmpty()) continue;
+            int score = 0;
+            if (candidate.equals(wanted)) score = 1000;
+            else if (candidate.contains(wanted) || wanted.contains(candidate)) score = 700 + Math.min(candidate.length(), wanted.length());
+            else {
+                java.util.Set<String> wantedTokens = new java.util.HashSet<>();
+                for (String token : title.toLowerCase(Locale.ROOT).split("[^a-z0-9]+")) if (token.length() > 2) wantedTokens.add(token);
+                java.util.Set<String> candidateTokens = new java.util.HashSet<>();
+                for (String token : base.toLowerCase(Locale.ROOT).split("[^a-z0-9]+")) if (token.length() > 2) candidateTokens.add(token);
+                int overlap = 0;
+                for (String token : wantedTokens) if (candidateTokens.contains(token)) overlap++;
+                if (overlap > 0) score = 100 * overlap / Math.max(1, wantedTokens.size());
+            }
+            if (score > bestScore) { bestScore = score; best = file; }
+        }
+        return bestScore >= 50 ? best : null;
+    }
+
+    private void collectImageFiles(File folder, java.util.List<File> output, int depth) {
+        if (folder == null || depth > 8) return;
+        File[] children = folder.listFiles();
+        if (children == null) return;
+        Arrays.sort(children, (a, b) -> a.getName().compareToIgnoreCase(b.getName()));
+        for (File child : children) {
+            if (child.isDirectory()) collectImageFiles(child, output, depth + 1);
+            else {
+                String name = child.getName().toLowerCase(Locale.ROOT);
+                if (name.endsWith(".jpg") || name.endsWith(".jpeg") || name.endsWith(".png") ||
+                        name.endsWith(".webp") || name.endsWith(".bmp") || name.endsWith(".gif")) output.add(child);
+            }
+        }
     }
 
     private boolean isImageOrVideo(String n) {
@@ -223,13 +280,30 @@ public class MainActivity extends Activity {
                     if (local == null || !local.isFile() || !local.canRead()) {
                         throw new Exception("Local video not found: " + selectedTitle);
                     }
-                    File finalLocal = local;
-                    String finalTitle = selectedTitle;
+                    JSONArray resolvedPlaylist = new JSONArray();
+                    int resolvedStart = 0;
+                    for (int i = 0; i < input.length(); i++) {
+                        JSONObject sourceItem = input.getJSONObject(i);
+                        String itemTitle = sourceItem.optString("title", "Wildlife video");
+                        File videoFile = (i == safeIndex) ? local : findVideo(itemTitle);
+                        if (videoFile != null && videoFile.isFile() && videoFile.canRead()) {
+                            JSONObject resolvedItem = new JSONObject();
+                            resolvedItem.put("title", itemTitle);
+                            resolvedItem.put("source", Uri.fromFile(videoFile).toString());
+                            if (i < safeIndex) resolvedStart++;
+                            resolvedPlaylist.put(resolvedItem);
+                        }
+                    }
+                    if (resolvedPlaylist.length() == 0) throw new Exception("No local videos are available.");
+                    final String finalTitle = selectedTitle;
+                    final String finalPlaylist = resolvedPlaylist.toString();
+                    final int finalStart = Math.min(resolvedStart, resolvedPlaylist.length() - 1);
                     runOnUiThread(() -> {
                         if (isFinishing() || isDestroyed()) { launchingMediaActivity = false; return; }
                         try {
                             Intent intent = new Intent(MainActivity.this, NativeVideoActivity.class);
-                            intent.putExtra("VIDEO_URL", Uri.fromFile(finalLocal).toString());
+                            intent.putExtra("VIDEO_PLAYLIST_JSON", finalPlaylist);
+                            intent.putExtra("VIDEO_START_INDEX", finalStart);
                             intent.putExtra("VIDEO_TITLE", finalTitle);
                             startActivity(intent);
                         } catch (Exception e) {
@@ -278,12 +352,25 @@ public class MainActivity extends Activity {
                 try {
                     JSONArray input = new JSONArray(imagesJson);
                     JSONArray resolved = new JSONArray();
+                    java.util.ArrayList<File> orderedLocalImages = new java.util.ArrayList<>();
+                    File root = rootFolder();
+                    if (root != null) {
+                        File imageFolder = new File(root, "30 front images");
+                        if (imageFolder.isDirectory()) collectImageFiles(imageFolder, orderedLocalImages, 0);
+                        if (orderedLocalImages.isEmpty()) collectImageFiles(root, orderedLocalImages, 0);
+                        java.util.Collections.sort(orderedLocalImages, (a, b) -> a.getAbsolutePath().compareToIgnoreCase(b.getAbsolutePath()));
+                    }
                     for (int i = 0; i < input.length(); i++) {
                         JSONObject item = input.getJSONObject(i);
                         String title = item.optString("title", "Photo " + (i + 1));
                         File local = findLocalImage(title);
+                        // Many panel folders use numbered or generic filenames. In that case,
+                        // preserve gallery order and use the matching local image position.
+                        if ((local == null || !local.isFile() || !local.canRead()) && i < orderedLocalImages.size()) {
+                            local = orderedLocalImages.get(i);
+                        }
                         if (local == null || !local.isFile() || !local.canRead()) {
-                            throw new Exception("Local photo not found: " + title);
+                            throw new Exception("Local photo not found: " + title + ". Check the 30 front images folder.");
                         }
                         JSONObject out = new JSONObject();
                         out.put("title", title);
@@ -468,7 +555,13 @@ public class MainActivity extends Activity {
     }
 
     @Override public void onWindowFocusChanged(boolean hasFocus) { super.onWindowFocusChanged(hasFocus); if (hasFocus) enableImmersiveMode(); }
-    @Override public void onBackPressed() { if (webView != null && webView.canGoBack()) webView.goBack(); else super.onBackPressed(); }
+    @Override public void onBackPressed() {
+        if (webView == null) { super.onBackPressed(); return; }
+        webView.evaluateJavascript(
+                "(function(){return window.handleAndroidBack ? window.handleAndroidBack() : false;})()",
+                value -> { if ("false".equals(value) || value == null) MainActivity.super.onBackPressed(); }
+        );
+    }
     @Override protected void onDestroy() {
         releaseJourneyPreview();
         if (webView != null) { webView.loadUrl("about:blank"); webView.destroy(); webView = null; }
