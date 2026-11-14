@@ -809,7 +809,7 @@ html, body {
   <div class="player-top">भीलवाड़ा वन विभाग • वन्यजीव एक्सप्लोरर</div>
   <video id="vid" controls playsinline></video>
   <iframe id="driveFrame" title="Media viewer" style="display:none;position:absolute;inset:0;width:100%;height:100%;border:0;z-index:1" allow="autoplay; fullscreen" allowfullscreen></iframe>
-  <button class="close" onclick="closeVideo()">✕ वापस</button>
+  <button class="close" onclick="closeVideo()">‹  Back / वापस</button>
   <div id="ptitle" class="ptitle"></div>
  </div>
 </section>
@@ -938,8 +938,11 @@ function openMedia(i,mode){
    alert(t('यह वीडियो केवल पैनल के स्थानीय स्टोरेज से उपलब्ध है।','This video is available from the panel local storage only.'));
    return;
  }
- if(window.AndroidImage && typeof window.AndroidImage.openNativeImage==='function'){
-   try{ window.AndroidImage.openNativeImage(item.name,item.name); }
+ if(window.AndroidImage && typeof window.AndroidImage.openNativeImageGallery==='function'){
+   try{
+     const photoList = wildlifeMedia.map((photo)=>({title:photo.name}));
+     window.AndroidImage.openNativeImageGallery(JSON.stringify(photoList), i);
+   }
    catch(error){ console.error('Unable to launch local image viewer:',error); alert('Unable to open this local photo.'); }
    return;
  }
@@ -966,7 +969,22 @@ function play(i){
  }
 }
 function closeVideo(){stop();show(playerReturnScreen==='category'?'category':'home');reset()}
-document.addEventListener('keydown',e=>{if(e.key==='Escape'&&$('player').classList.contains('active'))closeVideo()});
+window.swipeCategory = function(direction){
+ if(!current || current.id==='gallery' || current.id==='videoLibrary') return;
+ const index=categories.findIndex(c=>c.id===current.id);
+ if(index<0) return;
+ const next=(index+(direction<0?-1:1)+categories.length)%categories.length;
+ openCat(categories[next].id);
+};
+
+function handleAndroidBack(){
+ const active=document.querySelector('.screen.active');
+ if(!active)return false;
+ if(active.id==='player'){closeVideo();return true;}
+ if(active.id==='category'||active.id==='catmenu'){goमुख्यपृष्ठ();return true;}
+ return false;
+}
+document.addEventListener('keydown',e=>{if((e.key==='Escape'||e.key==='Backspace')&&handleAndroidBack())e.preventDefault()});
 function goमुख्यपृष्ठ(){stop();show('home');reset()}
 function stop(){$('vid').pause();$('vid').removeAttribute('src');$('vid').load();$('vid').style.display='block';$('driveFrame').src='';$('driveFrame').style.display='none'}
 function show(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));$(id).classList.add('active')}
@@ -1052,6 +1070,15 @@ renderHome();reset();
       }
     } catch(e) { console.warn('Journey preview bridge unavailable', e); }
   }
+
+  window.advanceHomeSlideshow = function(direction){
+    if (!heroImages.length) return;
+    heroIndex = (heroIndex + (direction < 0 ? -1 : 1) + heroImages.length) % heroImages.length;
+    const image = document.getElementById('heroSlideshowImage');
+    if (!image) return;
+    image.style.opacity = '0.2';
+    setTimeout(function(){ image.src = heroImages[heroIndex]; image.style.opacity = '1'; }, 120);
+  };
 
   window.refreshHomeMedia = function(){
     loadHeroImages();
@@ -1142,5 +1169,51 @@ renderHome();reset();
 }
 </style>
 
+
+<script id="restored-horizontal-swipe-navigation">
+(function(){
+  let startX=0, startY=0, startTarget=null, lastSwipeAt=0;
+  const threshold=65;
+  function onStart(e){
+    const t=e.touches && e.touches[0]; if(!t)return;
+    startX=t.clientX; startY=t.clientY; startTarget=e.target;
+  }
+  function onEnd(e){
+    const t=e.changedTouches && e.changedTouches[0]; if(!t)return;
+    const dx=t.clientX-startX, dy=t.clientY-startY;
+    if(Math.abs(dx)<threshold || Math.abs(dx)<Math.abs(dy)*1.25)return;
+    const now=Date.now(); if(now-lastSwipeAt<450)return; lastSwipeAt=now;
+    const active=document.querySelector('.screen.active'); if(!active)return;
+    if(active.id==='home'){
+      const hero=document.getElementById('heroSlideshowImage');
+      if(hero && (startTarget===hero || hero.contains(startTarget)) && window.advanceHomeSlideshow){
+        window.advanceHomeSlideshow(dx<0?1:-1);
+      }
+    } else if(active.id==='category' && window.swipeCategory){
+      window.swipeCategory(dx<0?1:-1);
+    }
+  }
+  document.addEventListener('touchstart',onStart,{passive:true,capture:true});
+  document.addEventListener('touchend',onEnd,{passive:true,capture:true});
+  window.addEventListener('keydown',function(e){
+    if(e.key!=='ArrowLeft'&&e.key!=='ArrowRight')return;
+    const active=document.querySelector('.screen.active'); if(!active)return;
+    if(active.id==='home'&&window.advanceHomeSlideshow)window.advanceHomeSlideshow(e.key==='ArrowRight'?1:-1);
+    else if(active.id==='category'&&window.swipeCategory)window.swipeCategory(e.key==='ArrowRight'?1:-1);
+  });
+})();
+</script>
+<style id="horizontal-swipe-touch-style">
+#heroSlideshowImage{touch-action:pan-y!important;user-select:none;-webkit-user-drag:none}
+#category .category-wrap{touch-action:pan-y}
+</style>
+
 </body>
 </html>
+
+<style id="navigation-visibility-fix">
+/* Persistent navigation controls for touch-screen panels */
+#catmenu .nav, #category .nav{position:fixed!important;top:12px!important;left:14px!important;z-index:10000!important;display:block!important;visibility:visible!important;opacity:1!important}
+#catmenu .nav button, #category .nav button{display:block!important;min-height:48px!important;padding:11px 19px!important;border:1px solid #f0d98a!important;border-radius:28px!important;background:#064a36!important;color:#fff!important;font-size:16px!important;font-weight:800!important;box-shadow:0 3px 12px #00180f99!important}
+#player .close{position:fixed!important;top:14px!important;left:14px!important;right:auto!important;z-index:10001!important;display:block!important;min-height:48px!important;padding:11px 18px!important;background:#07523c!important;color:#fff!important;border:1px solid #f0d98a!important;font-size:16px!important;font-weight:800!important}
+</style>
