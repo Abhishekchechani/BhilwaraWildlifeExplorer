@@ -77,6 +77,14 @@ public class MainActivity extends Activity {
         }
     }
 
+    @Override protected void onResume() {
+        super.onResume();
+        updateStorageStatus();
+        if (webView != null) {
+            webView.postDelayed(() -> webView.evaluateJavascript("if (typeof initializeJourneyPreview === 'function') initializeJourneyPreview();", null), 350);
+        }
+    }
+
     @Override protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == REQUEST_ALL_FILES) updateStorageStatus();
@@ -118,7 +126,7 @@ public class MainActivity extends Activity {
 
     private boolean isFeatured(String title) {
         String n = normalize(title);
-        return n.contains("bhilwarawildlifejourney") || n.contains("30minutewildlifejourney") || n.contains("iconicfloraandfaunaofbhilwara") || n.contains("featured") || n.contains("homevideo");
+        return n.contains("bhilwarawildlifejourney") || n.contains("30minutewildlifejourney") || n.contains("iconicfloraandfaunaofbhilwara") || n.contains("featured") || n.contains("homevideo") || n.equals("30");
     }
 
     private File findByName(File dir, String expected, boolean recursive) {
@@ -152,6 +160,16 @@ public class MainActivity extends Activity {
     }
 
     public class VideoBridge {
+        // Returns a file:// URI for a local video so the home-screen preview can autoplay silently.
+        // An empty string means the configured local file is not currently accessible.
+        @JavascriptInterface public String getLocalVideoUrl(String videoTitle) {
+            File local = findVideo(videoTitle);
+            if (local != null && local.isFile() && local.canRead()) {
+                return Uri.fromFile(local).toString();
+            }
+            return "";
+        }
+
         @JavascriptInterface public void playNativeVideo(String videoKeyOrUrl, String videoTitle) {
             JSONArray one = new JSONArray();
             try {
