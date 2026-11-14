@@ -748,6 +748,29 @@ html, body {
 }
 
 </style>
+
+<style id="bhilwara-journey-preview-video-swipe-fix">
+/* Keep the featured poster fully visible; use a wide preview card without cropping. */
+#home .home-journey {
+  height:auto !important;
+  min-height:0 !important;
+  max-height:none !important;
+  aspect-ratio:16 / 9 !important;
+  overflow:hidden !important;
+  background:#073d2c !important;
+}
+#home .home-journey .journey-thumbnail {
+  display:block !important;
+  position:absolute !important;
+  inset:0 !important;
+  width:100% !important;
+  height:100% !important;
+  object-fit:contain !important;
+  object-position:center center !important;
+  background:#073d2c !important;
+}
+#home .home-journey .journey-shade { pointer-events:none !important; }
+</style>
 </head>
 <body>
 
@@ -973,15 +996,33 @@ function openMedia(i,mode){
  if(!item){console.warn('Media item not found:',i);return;}
  if(mode==='video'){
    // Send the stable video ID to Android. The native app plays its local copy first.
-   if(window.AndroidVideo && typeof window.AndroidVideo.playNativeVideo==='function'){
+   if(window.AndroidVideo && typeof window.AndroidVideo.playNativeVideoPlaylist==='function'){
      try{
-       window.AndroidVideo.playNativeVideo(item.video,item.name);
+       let playlistItems=[];
+       let startAt=0;
+       if(current && current.id==='videoLibrary'){
+         playlistItems=wildlifeMedia.map(photo=>({title:photo.name,key:photo.video}));
+         startAt=Math.max(0,wildlifeMedia.indexOf(item));
+       } else {
+         const categoryPairs=(categoryRenderedItems && categoryRenderedItems.length)?categoryRenderedItems:current.items;
+         playlistItems=categoryPairs.map(pair=>{
+           const matched=findWildlifeMedia(pair);
+           return matched?{title:matched.name,key:matched.video}:null;
+         }).filter(Boolean);
+         startAt=playlistItems.findIndex(entry=>entry.key===item.video);
+         if(startAt<0){playlistItems=[{title:item.name,key:item.video}];startAt=0;}
+       }
+       window.AndroidVideo.playNativeVideoPlaylist(JSON.stringify(playlistItems),startAt,item.name);
        return;
      }catch(error){
-       console.error('Unable to launch native wildlife video:',error);
+       console.error('Unable to launch native wildlife playlist:',error);
        alert('Unable to open this video. Please try again.');
        return;
      }
+   }
+   if(window.AndroidVideo && typeof window.AndroidVideo.playNativeVideo==='function'){
+     try{window.AndroidVideo.playNativeVideo(item.video,item.name);return;}
+     catch(error){console.error('Unable to launch native wildlife video:',error);}
    }
    // Outside the Android app, retain the existing Google Drive preview player.
    $('ptitle').textContent=item.name;
