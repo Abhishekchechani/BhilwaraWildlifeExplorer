@@ -8,6 +8,10 @@ import android.view.View;
 import android.widget.FrameLayout;
 import android.widget.ProgressBar;
 import android.widget.Toast;
+import android.widget.TextView;
+import android.graphics.Color;
+import android.widget.TextView;
+import android.graphics.Color;
 
 import androidx.media3.common.MediaItem;
 import androidx.media3.common.PlaybackException;
@@ -49,6 +53,19 @@ public class NativeVideoActivity extends Activity {
         playerView.setShowBuffering(PlayerView.SHOW_BUFFERING_ALWAYS);
         root.addView(playerView, new FrameLayout.LayoutParams(
                 FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT));
+        TextView backButton = new TextView(this);
+        backButton.setText("‹  BACK");
+        backButton.setTextColor(Color.WHITE);
+        backButton.setTextSize(16);
+        backButton.setGravity(Gravity.CENTER);
+        backButton.setPadding(22, 12, 22, 12);
+        backButton.setBackgroundColor(0x99000000);
+        FrameLayout.LayoutParams backParams = new FrameLayout.LayoutParams(
+                FrameLayout.LayoutParams.WRAP_CONTENT, FrameLayout.LayoutParams.WRAP_CONTENT,
+                Gravity.TOP | Gravity.START);
+        backParams.setMargins(18, 18, 0, 0);
+        root.addView(backButton, backParams);
+        backButton.setOnClickListener(v -> finish());
         progressBar = new ProgressBar(this);
         FrameLayout.LayoutParams progressParams = new FrameLayout.LayoutParams(96, 96, Gravity.CENTER);
         root.addView(progressBar, progressParams);
