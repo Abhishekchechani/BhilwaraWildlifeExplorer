@@ -191,7 +191,7 @@ h2{font-size:clamp(28px,5vw,44px);line-height:1.15;margin:0 0 18px}
 .news-copy p{font-size:clamp(12px,1.8vw,16px)}
 .hero-inline-logo{position:absolute;right:4%;top:32%;width:clamp(72px,17vw,118px);height:auto;max-height:110px;object-fit:contain;margin:0;z-index:3}
 .home-journey{height:100%;min-height:260px;max-height:510px;border-radius:17px}
-.home-journey .journey-thumbnail{object-fit:cover;object-position:center 48%}
+.home-journey .journey-thumbnail{object-fit:contain;object-position:center;background:#073d2c}
 .home-journey .journey-shade{background:linear-gradient(0deg,rgba(0,25,16,.5),rgba(0,20,14,.02) 62%)}
 .home-journey .journey-caption{inset:auto 0 5%;align-items:center;justify-content:center;padding:0 12px}
 .home-journey .journey-copy,.home-journey .journey-kicker,.home-journey .journey-title,.home-journey .journey-desc{display:none!important}
@@ -413,7 +413,7 @@ html, body {
 #home .news-label{margin-bottom:6px}
 #home .news-hero img.hero-inline-logo{right:4%!important;top:50%!important;width:clamp(88px,20%,145px)!important;max-width:25%!important;max-height:72%!important;padding:6px!important}
 #home .home-journey{flex:0 0 auto;width:100%;height:clamp(210px,27vh,350px)!important;min-height:210px!important;max-height:350px!important;border-radius:18px}
-#home .home-journey .journey-thumbnail{object-fit:cover;object-position:center 46%}
+#home .home-journey .journey-thumbnail{object-fit:contain;object-position:center;background:#073d2c}
 #home .home-journey .journey-play-overlay{width:58px;height:58px}
 #home .home-journey .journey-watch{padding:11px 20px}
 #home .home-category-grid{display:grid!important;flex:0 0 auto;width:100%;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:9px;padding:0 0 2px}
@@ -992,16 +992,23 @@ function openMedia(i,mode){
    return;
  }
  // In the Android app, open Google Drive photos in a native Android ImageView.
- const directImageUrl='https://drive.google.com/uc?export=download&id='+encodeURIComponent(item.image);
- if(window.AndroidImage && typeof window.AndroidImage.openNativeImage==='function'){
+ const imageItems=wildlifeMedia.map(photo=>({
+   title:photo.name,
+   url:'https://drive.google.com/uc?export=download&id='+encodeURIComponent(photo.image)
+ }));
+ if(window.AndroidImage && typeof window.AndroidImage.openNativeImageGallery==='function'){
    try{
-     window.AndroidImage.openNativeImage(directImageUrl,item.name);
+     window.AndroidImage.openNativeImageGallery(JSON.stringify(imageItems),i);
      return;
    }catch(error){
-     console.error('Unable to launch native image viewer:',error);
-     alert('Unable to open this photo. Please try again.');
+     console.error('Unable to launch swipeable native image gallery:',error);
+     alert('Unable to open the photo gallery. Please try again.');
      return;
    }
+ }
+ if(window.AndroidImage && typeof window.AndroidImage.openNativeImage==='function'){
+   const directImageUrl='https://drive.google.com/uc?export=download&id='+encodeURIComponent(item.image);
+   window.AndroidImage.openNativeImage(directImageUrl,item.name); return;
  }
  // Browser fallback for preview/testing outside the Android application.
  $('ptitle').textContent=item.name;
