@@ -891,6 +891,9 @@ function openVideoLibrary(){
  current={id:"videoLibrary",icon:"🎬",hi:"वीडियो लाइब्रेरी",en:"Video Library"};
  renderCategory();show("category");reset();
 }
+function localImageUrl(title){
+ try { return window.AndroidImage && window.AndroidImage.getLocalImageUri ? window.AndroidImage.getLocalImageUri(title) : ''; } catch(e) { return ''; }
+}
 function findWildlifeMedia(pair){
  const name=pair[0].toLowerCase();
  return wildlifeMedia.find(x=>x.name.toLowerCase()===name) ||
@@ -901,18 +904,11 @@ function renderCategory(){
  $('ctitle').textContent=current.icon+' '+(lang==='hi'?current.hi:current.en);
  if(current.id==='videoLibrary'){
    $('videos').innerHTML=
-     `<button class="video-card" onclick="openSampleVideo()">
-       <div class="thumb" style="background:linear-gradient(135deg,#164d37,#0a241b);display:grid;place-items:center">
-         <div style="font-size:42px;color:#f1d27a">▶</div>
-       </div>
-       <div class="vtitle">Sample Test Video</div>
-       <div class="vmicro">${t('Google Drive के बिना सीधे वीडियो चलाकर जाँचें','Direct MP4 playback test — no Google Drive')}</div>
-     </button>`+
-     wildlifeMedia.map((item,i)=>`<button class="video-card" onclick="openMedia(${i},'video')"><div class="thumb" style="background-image:url('https://drive.google.com/thumbnail?id=${item.image}&sz=w800')"><div class="play">▶</div></div><div class="vtitle">${item.name}</div><div class="vmicro">${t('वीडियो चलाने के लिए स्पर्श करें','Tap to play video')}</div></button>`).join('');
+          wildlifeMedia.map((item,i)=>`<button class="video-card" onclick="openMedia(${i},'video')"><div class="thumb" style="background-image:url('${localImageUrl(item.name)}')"><div class="play">▶</div></div><div class="vtitle">${item.name}</div><div class="vmicro">${t('वीडियो चलाने के लिए स्पर्श करें','Tap to play video')}</div></button>`).join('');
    return;
  }
  if(current.id==='gallery'){
-   $('videos').innerHTML=wildlifeMedia.map((item,i)=>`<button class="video-card" onclick="openMedia(${i},'gallery')"><div class="thumb" style="background-image:url('https://drive.google.com/thumbnail?id=${item.image}&sz=w800')"><div class="play">📷</div></div><div class="vtitle">${item.name}</div><div class="vmicro">${t('फोटो देखने के लिए स्पर्श करें','Tap to view photo')}</div></button>`).join('');
+   $('videos').innerHTML=wildlifeMedia.map((item,i)=>`<button class="video-card" onclick="openMedia(${i},'gallery')"><div class="thumb" style="background-image:url('${localImageUrl(item.name)}')"><div class="play">📷</div></div><div class="vtitle">${item.name}</div><div class="vmicro">${t('फोटो देखने के लिए स्पर्श करें','Tap to view photo')}</div></button>`).join('');
    return;
  }
  let categoryItems=current.items.slice();
@@ -923,88 +919,33 @@ function renderCategory(){
  categoryRenderedItems=categoryItems;
  $('videos').innerHTML=categoryItems.map((pair,i)=>{
    const media=findWildlifeMedia(pair);
-   const img=media?`https://drive.google.com/thumbnail?id=${media.image}&sz=w800`:current.img;
+   const img=media?localImageUrl(media.name):'';
    return `<button class="video-card" onclick="play(${i})"><div class="thumb" style="background-image:url('${img}')"><div class="play">▶</div></div><div class="vtitle">${pair[lang==='hi'?1:0]}</div><div class="vmicro">${t('स्पर्श करके वीडियो देखें • वन्यजीव एक्सप्लोरर','Tap to watch • Wildlife Explorer')}</div></button>`;
  }).join('');
 }
 let playerReturnScreen='home';
-function openSampleVideo(){
- playerReturnScreen='category';
- const sampleVideoUrl='https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4';
- const sampleVideoTitle='Sample Test Video';
-
- // Use the native Android Media3 player when the app bridge is available.
- if(window.AndroidVideo && typeof window.AndroidVideo.playNativeVideo==='function'){
-   try{
-     window.AndroidVideo.playNativeVideo(sampleVideoUrl, sampleVideoTitle);
-   }catch(error){
-     console.error('Unable to launch native video player:', error);
-     alert('Unable to open the native video player. Please check the Android app build.');
-   }
-   return;
- }
-
- // Browser fallback for preview/testing outside the Android application.
- stop();
- $('ptitle').textContent=sampleVideoTitle;
- $('driveFrame').style.display='none';
- $('vid').style.display='block';
- $('vid').controls=true;
- $('vid').playsInline=true;
- $('vid').src=sampleVideoUrl;
- $('vid').load();
- show('player');
- reset();
- const playAttempt=$('vid').play();
- if(playAttempt && typeof playAttempt.catch==='function'){
-   playAttempt.catch(()=>{ /* Use the visible Play control if autoplay is restricted. */ });
- }
-}
 function openMedia(i,mode){
  playerReturnScreen='category';
  playingIndex=i;
  const item=wildlifeMedia[i];
  if(!item){console.warn('Media item not found:',i);return;}
  if(mode==='video'){
-   const directVideoUrl='https://drive.google.com/uc?export=download&id='+encodeURIComponent(item.video);
-   // In the Android app, send every wildlife video to the native Media3 player.
    if(window.AndroidVideo && typeof window.AndroidVideo.playNativeVideo==='function'){
-     try{
-       window.AndroidVideo.playNativeVideo(directVideoUrl,item.name);
-       return;
-     }catch(error){
-       console.error('Unable to launch native wildlife video:',error);
-       alert('Unable to open this video. Please try again.');
-       return;
-     }
+     try{ window.AndroidVideo.playNativeVideo(item.name,item.name); }
+     catch(error){ console.error('Unable to launch local wildlife video:',error); alert('Unable to open this local video.'); }
+     return;
    }
-   // Outside the Android app, retain the existing Google Drive preview player.
-   $('ptitle').textContent=item.name;
-   $('vid').pause();$('vid').style.display='none';
-   $('driveFrame').style.display='block';
-   $('driveFrame').src='https://drive.google.com/file/d/'+item.video+'/preview';
-   show('player');reset();
+   alert(t('यह वीडियो केवल पैनल के स्थानीय स्टोरेज से उपलब्ध है।','This video is available from the panel local storage only.'));
    return;
  }
- // In the Android app, open Google Drive photos in a native Android ImageView.
- const directImageUrl='https://drive.google.com/uc?export=download&id='+encodeURIComponent(item.image);
  if(window.AndroidImage && typeof window.AndroidImage.openNativeImage==='function'){
-   try{
-     window.AndroidImage.openNativeImage(directImageUrl,item.name);
-     return;
-   }catch(error){
-     console.error('Unable to launch native image viewer:',error);
-     alert('Unable to open this photo. Please try again.');
-     return;
-   }
+   try{ window.AndroidImage.openNativeImage(item.name,item.name); }
+   catch(error){ console.error('Unable to launch local image viewer:',error); alert('Unable to open this local photo.'); }
+   return;
  }
- // Browser fallback for preview/testing outside the Android application.
- $('ptitle').textContent=item.name;
- $('vid').pause();$('vid').style.display='none';
- $('driveFrame').style.display='block';
- $('driveFrame').src='https://drive.google.com/file/d/'+item.image+'/preview';
- show('player');reset();
+ alert(t('यह फोटो केवल पैनल के स्थानीय स्टोरेज से उपलब्ध है।','This photo is available from the panel local storage only.'));
 }
+
 function play(i){
  playerReturnScreen='category';
  const pair=categoryRenderedItems[i] || current.items[i];
@@ -1089,7 +1030,7 @@ renderHome();reset();
               image.src = heroImages[heroIndex];
               image.style.opacity = '1';
             }, 180);
-          }, 1000);
+          }, 10000);
         }
       }
     } catch(e) { console.warn('Local hero slideshow unavailable', e); }
