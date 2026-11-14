@@ -169,24 +169,47 @@ public class MainActivity extends Activity {
                 try {
                     JSONArray input = new JSONArray(playlistJson);
                     JSONArray resolved = new JSONArray();
+                    int resolvedStartIndex = -1;
+                    boolean selectedLocalVideoMissing = false;
                     for (int i = 0; i < input.length(); i++) {
                         JSONObject source = input.getJSONObject(i);
                         String title = source.optString("title", "Wildlife video");
                         String key = source.optString("key", "");
+                        boolean localOnly = source.optBoolean("localOnly", false);
                         JSONObject item = new JSONObject();
                         item.put("title", title);
+
                         if (key.startsWith("http://") || key.startsWith("https://")) {
                             item.put("url", key);
                         } else {
                             File local = findVideo(title);
-                            if (local != null && local.isFile()) item.put("path", local.getAbsolutePath());
-                            else item.put("url", "https://drive.google.com/uc?export=download&id=" + Uri.encode(key));
+                            if (local != null && local.isFile()) {
+                                if (i == startIndex) resolvedStartIndex = resolved.length();
+                                item.put("path", local.getAbsolutePath());
+                            } else if (localOnly) {
+                                if (i == startIndex) selectedLocalVideoMissing = true;
+                                // A local-only category item must never be sent to Drive with a title as its ID.
+                                continue;
+                            } else {
+                                if (i == startIndex) resolvedStartIndex = resolved.length();
+                                item.put("url", "https://drive.google.com/uc?export=download&id=" + Uri.encode(key));
+                            }
                         }
                         resolved.put(item);
                     }
+                    if (selectedLocalVideoMissing) {
+                        String missingTitle = videoTitle == null ? "selected category video" : videoTitle;
+                        Toast.makeText(MainActivity.this, "Local video not found: " + missingTitle, Toast.LENGTH_LONG).show();
+                        return;
+                    }
+                    if (resolved.length() == 0) {
+                        Toast.makeText(MainActivity.this, "No local videos found in bhilwara_forest_department.", Toast.LENGTH_LONG).show();
+                        return;
+                    }
+                    if (resolvedStartIndex < 0) resolvedStartIndex = 0;
                     Intent intent = new Intent(MainActivity.this, NativeVideoActivity.class);
                     intent.putExtra("VIDEO_PLAYLIST_JSON", resolved.toString());
-                    intent.putExtra("VIDEO_START_INDEX", Math.max(0, Math.min(startIndex, resolved.length() - 1)));
+                    intent.putExtra("VIDEO_START_INDEX", Math.max(0, Math.min(resolvedStartIndex, resolved.length() - 1)));
                     intent.putExtra("VIDEO_TITLE", videoTitle == null ? "Wildlife video" : videoTitle);
                     startActivity(intent);
                 } catch (Exception e) {
