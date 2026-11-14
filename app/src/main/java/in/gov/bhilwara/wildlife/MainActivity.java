@@ -43,6 +43,7 @@ public class MainActivity extends Activity {
     private ExoPlayer journeyPreviewPlayer;
     private File journeyPreviewFile;
     private volatile boolean launchingMediaActivity = false;
+    private final java.util.Map<String, File> videoLookupCache = new java.util.concurrent.ConcurrentHashMap<>();
 
     @Override protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -128,11 +129,16 @@ public class MainActivity extends Activity {
 
     private File findVideo(String title) {
         File root = rootFolder(); if (root == null) return null;
+        String cacheKey = normalize(title);
+        File cached = videoLookupCache.get(cacheKey);
+        if (cached != null && cached.isFile() && cached.canRead()) return cached;
+        File match = null;
         if (isFeatured(title)) {
-            File featured = findByName(root, "Iconic_Flora_and_Fauna_of_Bhilwara_with_credit", true);
-            if (featured != null) return featured;
+            match = findVideoByName(root, "Iconic_Flora_and_Fauna_of_Bhilwara_with_credit");
         }
-        return findByName(root, normalize(title), false);
+        if (match == null) match = findVideoByName(root, title);
+        if (match != null) videoLookupCache.put(cacheKey, match);
+        return match;
     }
 
     private boolean isFeatured(String title) {
@@ -140,17 +146,26 @@ public class MainActivity extends Activity {
         return n.contains("bhilwarawildlifejourney") || n.contains("30minutewildlifejourney") || n.contains("iconicfloraandfaunaofbhilwara") || n.contains("featured") || n.contains("homevideo");
     }
 
-    private File findByName(File dir, String expected, boolean recursive) {
+    private File findVideoByName(File dir, String expectedTitle) {
         File[] children = dir.listFiles(); if (children == null) return null;
+        Arrays.sort(children, (a, b) -> a.getName().compareToIgnoreCase(b.getName()));
+        String wanted = normalize(expectedTitle);
         for (File f : children) {
             if (f.isDirectory()) {
-                File found = findByName(f, expected, true); if (found != null) return found;
-            } else if (isImageOrVideo(f.getName())) {
+                File found = findVideoByName(f, expectedTitle);
+                if (found != null) return found;
+            } else if (isVideoFile(f.getName())) {
                 String base = f.getName().replaceFirst("(?i)\\.[^.]+$", "");
-                if (normalize(base).equals(normalize(expected))) return f;
+                if (normalize(base).equals(wanted)) return f;
             }
         }
         return null;
+    }
+
+    private boolean isVideoFile(String name) {
+        String x = name.toLowerCase(Locale.ROOT);
+        return x.endsWith(".mp4") || x.endsWith(".m4v") || x.endsWith(".mov") ||
+                x.endsWith(".mkv") || x.endsWith(".webm") || x.endsWith(".3gp");
     }
 
     private File findLocalImage(String title) {
