@@ -83,8 +83,17 @@ public class MainActivity extends Activity {
     }
 
     private File rootFolder() {
-        File f = new File(ROOT_PATH);
-        return f.isDirectory() && f.canRead() ? f : null;
+        String[] candidates = new String[] {
+                ROOT_PATH,
+                "/sdcard/bhilwara_forest_department",
+                "/storage/self/primary/bhilwara_forest_department",
+                new File(Environment.getExternalStorageDirectory(), "bhilwara_forest_department").getAbsolutePath()
+        };
+        for (String path : candidates) {
+            File f = new File(path);
+            if (f.isDirectory() && f.canRead()) return f;
+        }
+        return null;
     }
 
     private void updateStorageStatus() {
@@ -109,7 +118,7 @@ public class MainActivity extends Activity {
 
     private boolean isFeatured(String title) {
         String n = normalize(title);
-        return n.contains("bhilwarawildlifejourney") || n.contains("iconicfloraandfaunaofbhilwara") || n.contains("featured") || n.contains("homevideo");
+        return n.contains("bhilwarawildlifejourney") || n.contains("30minutewildlifejourney") || n.contains("iconicfloraandfaunaofbhilwara") || n.contains("featured") || n.contains("homevideo");
     }
 
     private File findByName(File dir, String expected, boolean recursive) {
@@ -144,23 +153,45 @@ public class MainActivity extends Activity {
 
     public class VideoBridge {
         @JavascriptInterface public void playNativeVideo(String videoKeyOrUrl, String videoTitle) {
-            if (videoKeyOrUrl == null || videoKeyOrUrl.trim().isEmpty()) return;
+            JSONArray one = new JSONArray();
+            try {
+                JSONObject item = new JSONObject();
+                item.put("title", videoTitle == null ? "Wildlife video" : videoTitle);
+                item.put("key", videoKeyOrUrl == null ? "" : videoKeyOrUrl);
+                one.put(item);
+            } catch (Exception ignored) { }
+            playNativeVideoPlaylist(one.toString(), 0, videoTitle);
+        }
+
+        @JavascriptInterface public void playNativeVideoPlaylist(String playlistJson, int startIndex, String videoTitle) {
+            if (playlistJson == null || playlistJson.trim().isEmpty()) return;
             runOnUiThread(() -> {
-                String title = videoTitle == null ? "Wildlife video" : videoTitle;
-                Intent intent = new Intent(MainActivity.this, NativeVideoActivity.class);
-                intent.putExtra("VIDEO_TITLE", title);
-                String key = videoKeyOrUrl.trim();
-                if (key.startsWith("http://") || key.startsWith("https://")) {
-                    intent.putExtra("VIDEO_URL", key);
-                } else {
-                    File local = findVideo(title);
-                    if (local != null && local.isFile()) intent.putExtra("VIDEO_FILE_PATH", local.getAbsolutePath());
-                    else {
-                        intent.putExtra("VIDEO_URL", "https://drive.google.com/uc?export=download&id=" + Uri.encode(key));
-                        Toast.makeText(MainActivity.this, "Local video not found: " + title + ". Trying online backup.", Toast.LENGTH_SHORT).show();
+                try {
+                    JSONArray input = new JSONArray(playlistJson);
+                    JSONArray resolved = new JSONArray();
+                    for (int i = 0; i < input.length(); i++) {
+                        JSONObject source = input.getJSONObject(i);
+                        String title = source.optString("title", "Wildlife video");
+                        String key = source.optString("key", "");
+                        JSONObject item = new JSONObject();
+                        item.put("title", title);
+                        if (key.startsWith("http://") || key.startsWith("https://")) {
+                            item.put("url", key);
+                        } else {
+                            File local = findVideo(title);
+                            if (local != null && local.isFile()) item.put("path", local.getAbsolutePath());
+                            else item.put("url", "https://drive.google.com/uc?export=download&id=" + Uri.encode(key));
+                        }
+                        resolved.put(item);
                     }
+                    Intent intent = new Intent(MainActivity.this, NativeVideoActivity.class);
+                    intent.putExtra("VIDEO_PLAYLIST_JSON", resolved.toString());
+                    intent.putExtra("VIDEO_START_INDEX", Math.max(0, Math.min(startIndex, resolved.length() - 1)));
+                    intent.putExtra("VIDEO_TITLE", videoTitle == null ? "Wildlife video" : videoTitle);
+                    startActivity(intent);
+                } catch (Exception e) {
+                    Toast.makeText(MainActivity.this, "Unable to prepare video playlist.", Toast.LENGTH_LONG).show();
                 }
-                startActivity(intent);
             });
         }
     }
